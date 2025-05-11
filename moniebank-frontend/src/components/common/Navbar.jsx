@@ -1,0 +1,101 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import '../../styles/navbar.css';
+
+const Navbar = () => {
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  return (
+    <nav className="navbar">
+      <div className="navbar-container">
+        <div className="navbar-brand">
+          <Link to="/" className="navbar-logo">
+            MonieBank
+          </Link>
+        </div>
+        
+        <div className="navbar-menu">
+          <ul className="navbar-nav">
+            {currentUser ? (
+              <>
+                <li className="nav-item">
+                  <Link to="/dashboard" className="nav-link">
+                    Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/accounts" className="nav-link">
+                    Accounts
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/transactions" className="nav-link">
+                    Transactions
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <Link to="/about" className="nav-link">
+                    About
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/features" className="nav-link">
+                    Features
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/contact" className="nav-link">
+                    Contact
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
+          
+          <div className="navbar-auth">
+            {currentUser ? (
+              <>
+                <div className="dropdown">
+                  <button className="dropdown-toggle">
+                    {currentUser.name || 'Account'} ▼
+                  </button>
+                  <div className="dropdown-menu">
+                    <Link to="/profile" className="dropdown-item">
+                      Profile
+                    </Link>
+                    <Link to="/settings" className="dropdown-item">
+                      Settings
+                    </Link>
+                    <hr />
+                    <button 
+                      className="dropdown-item logout-button"
+                      onClick={logout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-secondary">
+                  Login
+                </Link>
+                <Link to="/register" className="btn btn-primary">
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
