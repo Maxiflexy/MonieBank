@@ -1,0 +1,59 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+#  config:
+#    import: optional:configserver:http://localhost:8888
+
+  # This is for direct configuration, but we'll use config server in production
+  datasource:
+    url: jdbc:postgresql://localhost:5434/auth_service
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/api/auth/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - profile
+
+app:
+  auth:
+    tokenSecret: my_very_confidential_sectet_for_auth_application
+    tokenExpirationMsec: 864000000 # 10 days
+    oauth2:
+      authorizedRedirectUris:
+        - http://localhost:3000/oauth2/redirect
+
+# Swagger/OpenAPI configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+eureka:
+  instance:
+    hostname: localhost
+    preferIpAddress: false
+    instanceId: localhost:${spring.application.name}:${server.port}
+    appname: ${spring.application.name}

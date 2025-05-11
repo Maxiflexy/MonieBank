@@ -1,0 +1,64 @@
+package com.maxiflexy.account_service.service;
+
+import com.maxiflexy.account_service.dto.AccountDto;
+import com.maxiflexy.account_service.dto.CreateAccountDto;
+import com.maxiflexy.account_service.exception.ResourceNotFoundException;
+import com.maxiflexy.account_service.model.Account;
+import com.maxiflexy.account_service.repository.AccountRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class AccountService {
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    public List<AccountDto> getAccountsByUserId(Long userId) {
+        return accountRepository.findByUserId(userId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public AccountDto getAccountById(Long userId, Long accountId) {
+        Account account = accountRepository.findByUserIdAndId(userId, accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        return convertToDto(account);
+    }
+
+    public AccountDto getAccountByNumber(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        return convertToDto(account);
+    }
+
+    @Transactional
+    public AccountDto createAccount(CreateAccountDto createAccountDto) {
+        Account account = new Account();
+        account.setUserId(createAccountDto.getUserId());
+        account.setFullName(createAccountDto.getFullName());
+        account.setEmail(createAccountDto.getEmail());
+        account.setAccountType(createAccountDto.getAccountType());
+
+        Account savedAccount = accountRepository.save(account);
+        return convertToDto(savedAccount);
+    }
+
+    private AccountDto convertToDto(Account account) {
+        AccountDto dto = new AccountDto();
+        dto.setId(account.getId());
+        dto.setUserId(account.getUserId());
+        dto.setAccountNumber(account.getAccountNumber());
+        dto.setBalance(account.getBalance());
+        dto.setAccountType(account.getAccountType());
+        dto.setFullName(account.getFullName());
+        dto.setEmail(account.getEmail());
+        dto.setCreatedAt(account.getCreatedAt());
+        dto.setUpdatedAt(account.getUpdatedAt());
+        return dto;
+    }
+}

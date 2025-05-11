@@ -1,0 +1,45 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: account-service
+#  config:
+#    import: optional:configserver:http://localhost:8888
+
+  # This is for direct configuration, but we'll use config server in production
+  datasource:
+    url: jdbc:postgresql://localhost:5433/account_service
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# Swagger/OpenAPI configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+eureka:
+  instance:
+    hostname: localhost
+    preferIpAddress: false
+    instanceId: localhost:${spring.application.name}:${server.port}
+    appname: ${spring.application.name}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

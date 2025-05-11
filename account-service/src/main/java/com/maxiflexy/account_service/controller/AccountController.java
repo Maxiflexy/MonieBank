@@ -1,0 +1,56 @@
+package com.maxiflexy.account_service.controller;
+
+import com.maxiflexy.account_service.dto.AccountDto;
+import com.maxiflexy.account_service.dto.CreateAccountDto;
+import com.maxiflexy.account_service.service.AccountService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/accounts")
+@Tag(name = "Account", description = "Account management API")
+public class AccountController {
+
+    @Autowired
+    private AccountService accountService;
+
+    @GetMapping
+    @Operation(summary = "Get all accounts for a user", description = "Returns a list of accounts owned by the user")
+    public ResponseEntity<List<AccountDto>> getAccounts(@RequestHeader("X-User-Id") Long userId) {
+        List<AccountDto> accounts = accountService.getAccountsByUserId(userId);
+        return ResponseEntity.ok(accounts);
+    }
+
+    @GetMapping("/{accountId}")
+    @Operation(summary = "Get account by ID", description = "Returns an account by its ID")
+    public ResponseEntity<AccountDto> getAccountById(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long accountId) {
+        AccountDto account = accountService.getAccountById(userId, accountId);
+        return ResponseEntity.ok(account);
+    }
+
+    @GetMapping("/number/{accountNumber}")
+    @Operation(summary = "Get account by number", description = "Returns an account by its account number")
+    public ResponseEntity<AccountDto> getAccountByNumber(@PathVariable String accountNumber) {
+        AccountDto account = accountService.getAccountByNumber(accountNumber);
+        return ResponseEntity.ok(account);
+    }
+
+    @PostMapping
+    @Operation(summary = "Create a new account", description = "Creates a new account for the user")
+    public ResponseEntity<AccountDto> createAccount(
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody CreateAccountDto createAccountDto) {
+        // Ensure the userId in the request body matches the one in the header
+        createAccountDto.setUserId(userId);
+        AccountDto createdAccount = accountService.createAccount(createAccountDto);
+        return ResponseEntity.ok(createdAccount);
+    }
+}
