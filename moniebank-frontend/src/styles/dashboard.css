@@ -1,0 +1,126 @@
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+}
+
+.dashboard-container {
+  display: flex;
+  flex: 1;
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 20px;
+  margin-left: 260px; /* Match sidebar width */
+}
+
+.dashboard-content h1 {
+  margin-bottom: 30px;
+  color: var(--secondary-color);
+  font-size: 1.8rem;
+}
+
+/* Section Styles */
+.dashboard-content section {
+  margin-bottom: 40px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 1.4rem;
+  color: var(--secondary-color);
+}
+
+.view-all {
+  font-size: 0.85rem;
+  color: var(--primary-color);
+}
+
+/* Accounts Overview Section */
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.no-accounts {
+  text-align: center;
+  padding: 30px;
+}
+
+.no-accounts p {
+  margin-bottom: 20px;
+  color: var(--light-text-color);
+}
+
+/* Recent Transactions Section */
+.no-transactions {
+  text-align: center;
+  padding: 20px;
+  color: var(--light-text-color);
+}
+
+/* Quick Actions Section */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.action-card {
+  background-color: var(--background-color);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow);
+}
+
+.action-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.action-card h3 {
+  font-size: 1rem;
+  color: var(--secondary-color);
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.1rem;
+  color: var(--light-text-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .dashboard-content {
+    margin-left: 0;
+    padding: 15px;
+  }
+
+  .accounts-grid,
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
