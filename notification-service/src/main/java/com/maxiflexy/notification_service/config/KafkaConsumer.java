@@ -17,8 +17,14 @@ public class KafkaConsumer {
     private NotificationService notificationService;
 
     @KafkaListener(topics = "transaction-notifications", groupId = "${spring.kafka.consumer.group-id}")
-    public void consumeNotification(NotificationDto notification) {
-        logger.info("Received notification: {}", notification);
+    public void consumeTransactionNotification(NotificationDto notification) {
+        logger.info("Received transaction notification: {}", notification);
         notificationService.processNotification(notification);
+    }
+
+    @KafkaListener(topics = "email-notifications", groupId = "${spring.kafka.consumer.group-id}")
+    public void consumeEmailNotification(NotificationDto notification) {
+        logger.info("Received email notification: {}", notification);
+        notificationService.sendDirectEmail(notification);
     }
 }

@@ -18,15 +18,27 @@ public class NotificationService {
     private EmailService emailService;
 
     public void processNotification(NotificationDto notification) {
-        logger.info("Processing notification: {}", notification);
+        logger.info("Processing transaction notification: {}", notification);
 
         String emailBody = buildEmailBody(notification);
         emailService.sendEmail(notification.getRecipientEmail(), notification.getSubject(), emailBody);
     }
 
+    public void sendDirectEmail(NotificationDto notification) {
+        logger.info("Sending direct email notification: {}", notification);
+
+        // For direct emails like verification, the message is already formatted
+        emailService.sendEmail(
+                notification.getRecipientEmail(),
+                notification.getSubject(),
+                notification.getMessage()
+        );
+    }
+
     private String buildEmailBody(NotificationDto notification) {
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
-        String formattedAmount = currencyFormatter.format(notification.getAmount());
+        String formattedAmount = notification.getAmount() != null ?
+                currencyFormatter.format(notification.getAmount()) : "0.00";
 
         StringBuilder body = new StringBuilder();
         body.append("Dear ").append(notification.getRecipientName()).append(",\n\n");

@@ -19,6 +19,6 @@ public class NotificationDto {
     private String accountNumber;
     private BigDecimal amount;
     private String transactionType;
-    private LocalDateTime timestamp;
+    private String notificationType;
+    private LocalDateTime timestamp = LocalDateTime.now();
 }
-

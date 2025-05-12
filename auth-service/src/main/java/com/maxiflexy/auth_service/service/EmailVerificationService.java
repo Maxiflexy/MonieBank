@@ -1,5 +1,6 @@
 package com.maxiflexy.auth_service.service;
 
+import com.maxiflexy.auth_service.dto.EmailNotificationDto;
 import com.maxiflexy.auth_service.model.User;
 import com.maxiflexy.auth_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ public class EmailVerificationService {
     private UserRepository userRepository;
 
     @Autowired
-    private EmailService emailService;
+    private NotificationSender notificationSender;
 
     @Value("${app.auth.verification.token-expiry-minutes}")
     private long tokenExpiryMinutes;
@@ -37,7 +38,14 @@ public class EmailVerificationService {
                 + "The link will expire in " + tokenExpiryMinutes + " minutes.\n\n"
                 + "Regards,\nMonieBank Team";
 
-        emailService.sendEmail(user.getEmail(), "Verify Your Email Address", emailBody);
+        EmailNotificationDto notification = new EmailNotificationDto();
+        notification.setRecipientEmail(user.getEmail());
+        notification.setRecipientName(user.getName());
+        notification.setSubject("Verify Your Email Address");
+        notification.setMessage(emailBody);
+        notification.setNotificationType("EMAIL_VERIFICATION");
+
+        notificationSender.sendEmailNotification(notification);
     }
 
     public boolean verifyEmail(String token) {

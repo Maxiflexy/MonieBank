@@ -7,18 +7,17 @@ spring:
 #  config:
 #    import: optional:configserver:http://localhost:8888
 
-  # Gmail Configuration
+  # MailDev Configuration (replacing Gmail)
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${GMAIL_USERNAME}
-    password: ${GMAIL_APP_PASSWORD}
+    host: maildev
+    port: 1025
+    # No username/password needed for MailDev
     properties:
       mail:
         smtp:
-          auth: true
+          auth: false  # No auth needed for MailDev
           starttls:
-            enable: true
+            enable: false  # No TLS needed
 
   # Kafka Configuration
   kafka:
@@ -29,7 +28,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: com.maxiflexy.notification_service.dto,com.maxiflexy.transaction_service.dto,com.maxiflexy.account_service.dto
+        spring.json.trusted.packages: com.maxiflexy.notification_service.dto,com.maxiflexy.transaction_service.dto,com.maxiflexy.account_service.dto,com.maxiflexy.auth_service.dto
 
 # Eureka configuration
 eureka:
