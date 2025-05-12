@@ -12,12 +12,14 @@ const authApi = {
   },
   
   verifyEmail: async (token) => {
+    // Make sure we're using the correct API route through API Gateway
     const response = await axiosInstance.get(`/auth/verify-email?token=${token}`);
     return response.data;
   },
   
   resendVerification: async (email) => {
-    const response = await axiosInstance.post('/auth/resend-verification', { email });
+    // Update to use query param instead of body
+    const response = await axiosInstance.post(`/auth/resend-verification?email=${email}`);
     return response.data;
   },
   

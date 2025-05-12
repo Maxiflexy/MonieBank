@@ -82,6 +82,9 @@ public class AuthController {
     @GetMapping("/verify-email")
     @Operation(summary = "Verify email address", description = "Verifies a user's email address via token")
     public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        // Log token receipt for debugging
+        System.out.println("Received verification token: " + token);
+
         boolean verified = emailVerificationService.verifyEmail(token);
         if (verified) {
             return ResponseEntity.ok(new ApiResponse(true, "Email verified successfully. You can now login."));

@@ -24,7 +24,8 @@ public class GatewayConfig {
                         .uri("lb://auth-service"))
                 .route("auth-service-oauth2", r -> r.path("/api/auth/oauth2/**")
                         .uri("lb://auth-service"))
-                .route("auth-service-verify-email", r -> r.path("/api/auth/verify-email/**")
+                // Fix the email verification endpoint to properly handle the token parameter
+                .route("auth-service-verify-email", r -> r.path("/api/auth/verify-email")
                         .uri("lb://auth-service"))
                 .route("auth-service-resend-verification", r -> r.path("/api/auth/resend-verification")
                         .uri("lb://auth-service"))
