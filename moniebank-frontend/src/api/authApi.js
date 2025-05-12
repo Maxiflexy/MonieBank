@@ -12,8 +12,12 @@ const authApi = {
   },
   
   verifyEmail: async (token) => {
-    // Make sure we're using the correct API route through API Gateway
-    const response = await axiosInstance.get(`/auth/verify-email?token=${token}`);
+    const response = await axiosInstance.get(`/auth/verify-email?token=${token}`, {
+      maxRedirects: 0, // Prevent redirects
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
     return response.data;
   },
   
