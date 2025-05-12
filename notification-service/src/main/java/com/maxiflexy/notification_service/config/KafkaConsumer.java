@@ -1,3 +1,4 @@
+// notification-service/src/main/java/com/maxiflexy/notification_service/config/KafkaConsumer.java
 package com.maxiflexy.notification_service.config;
 
 import com.maxiflexy.notification_service.dto.NotificationDto;
@@ -25,6 +26,11 @@ public class KafkaConsumer {
     @KafkaListener(topics = "email-notifications", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeEmailNotification(NotificationDto notification) {
         logger.info("Received email notification: {}", notification);
-        notificationService.sendDirectEmail(notification);
+        // Handle EMAIL_VERIFICATION notifications differently
+        if ("EMAIL_VERIFICATION".equals(notification.getNotificationType())) {
+            notificationService.sendDirectEmail(notification);
+        } else {
+            notificationService.processNotification(notification);
+        }
     }
 }

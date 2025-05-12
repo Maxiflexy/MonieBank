@@ -9,7 +9,7 @@ spring:
 
   # MailDev Configuration (replacing Gmail)
   mail:
-    host: maildev
+    host: localhost
     port: 1025
     # No username/password needed for MailDev
     properties:
@@ -28,7 +28,9 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: com.maxiflexy.notification_service.dto,com.maxiflexy.transaction_service.dto,com.maxiflexy.account_service.dto,com.maxiflexy.auth_service.dto
+        spring.json.trusted.packages: com.maxiflexy.notification_service.dto,com.maxiflexy.auth_service.dto
+        spring.json.value.default.type: com.maxiflexy.notification_service.dto.NotificationDto
+        spring.json.type.mapping: emailnotification:com.maxiflexy.notification_service.dto.NotificationDto
 
 # Eureka configuration
 eureka:

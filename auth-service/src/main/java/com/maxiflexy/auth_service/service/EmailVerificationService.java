@@ -31,7 +31,7 @@ public class EmailVerificationService {
         user.setVerificationTokenExpiryDate(LocalDateTime.now().plusMinutes(tokenExpiryMinutes));
         userRepository.save(user);
 
-        String verificationUrl = frontendBaseUrl + "/verify-email?token=" + token;
+        String verificationUrl = frontendBaseUrl + "verify-email?token=" + token;
         String emailBody = "Dear " + user.getName() + ",\n\n"
                 + "Please verify your email by clicking the link below:\n\n"
                 + verificationUrl + "\n\n"
