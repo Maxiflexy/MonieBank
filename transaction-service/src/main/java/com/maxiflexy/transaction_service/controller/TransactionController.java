@@ -1,7 +1,7 @@
-package com.maxiflexy.account_service.controller;
+package com.maxiflexy.transaction_service.controller;
 
-import com.maxiflexy.account_service.dto.*;
-import com.maxiflexy.account_service.service.TransactionService;
+import com.maxiflexy.transaction_service.dto.*;
+import com.maxiflexy.transaction_service.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/accounts/transactions")
+@RequestMapping("/api/transactions")
 @Tag(name = "Transaction", description = "Banking transaction API")
 public class TransactionController {
 

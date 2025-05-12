@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/navbar.css';
+import logo from '../../assets/logo.png';
 
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
@@ -12,7 +13,8 @@ const Navbar = () => {
       <div className="navbar-container">
         <div className="navbar-brand">
           <Link to="/" className="navbar-logo">
-            MonieBank
+          <img src={logo} alt="MonieBank Logo" className="brand-logo" />
+            <span className="brand-text">MonieBank</span>
           </Link>
         </div>
         

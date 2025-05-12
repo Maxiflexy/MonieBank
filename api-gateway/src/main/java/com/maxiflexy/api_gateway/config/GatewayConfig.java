@@ -24,6 +24,10 @@ public class GatewayConfig {
                         .uri("lb://auth-service"))
                 .route("auth-service-oauth2", r -> r.path("/api/auth/oauth2/**")
                         .uri("lb://auth-service"))
+                .route("auth-service-verify-email", r -> r.path("/api/auth/verify-email/**")
+                        .uri("lb://auth-service"))
+                .route("auth-service-resend-verification", r -> r.path("/api/auth/resend-verification")
+                        .uri("lb://auth-service"))
 
                 // Auth Service Routes (Secured)
                 .route("auth-service-secured", r -> r.path("/api/auth/**")
@@ -31,9 +35,20 @@ public class GatewayConfig {
                         .uri("lb://auth-service"))
 
                 // Account Service Routes (Secured)
-                .route("account-service", r -> r.path("/api/accounts/**")
+                .route("account-service", r -> r.path("/api/accounts")
                         .filters(f -> f.filter(jwtAuthenticationFilter))
                         .uri("lb://account-service"))
+                .route("account-service-id", r -> r.path("/api/accounts/{id}")
+                        .filters(f -> f.filter(jwtAuthenticationFilter))
+                        .uri("lb://account-service"))
+                .route("account-service-number", r -> r.path("/api/accounts/number/**")
+                        .filters(f -> f.filter(jwtAuthenticationFilter))
+                        .uri("lb://account-service"))
+
+                // Transaction Service Routes (Secured)
+                .route("transaction-service", r -> r.path("/api/transactions/**")
+                        .filters(f -> f.filter(jwtAuthenticationFilter))
+                        .uri("lb://transaction-service"))
 
                 .build();
     }

@@ -1,7 +1,7 @@
-package com.maxiflexy.account_service.dto;
+package com.maxiflexy.transaction_service.dto;
 
-import com.maxiflexy.account_service.enums.TransactionStatus;
-import com.maxiflexy.account_service.enums.TransactionType;
+import com.maxiflexy.transaction_service.enums.TransactionStatus;
+import com.maxiflexy.transaction_service.enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

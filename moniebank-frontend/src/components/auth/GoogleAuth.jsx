@@ -26,7 +26,7 @@ const GoogleAuth = ({ isRegister = false }) => {
     const initializeGoogleButton = () => {
       if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
-          client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your Google Client ID
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: handleGoogleResponse,
           auto_select: false,
         });

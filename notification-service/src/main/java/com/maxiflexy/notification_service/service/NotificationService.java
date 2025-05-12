@@ -66,7 +66,7 @@ public class NotificationService {
         }
 
         body.append("\n\nThank you for using our Banking Service!\n\n")
-                .append("Regards,\nBanking Microservice Team");
+                .append("Regards,\nMonieBank Team");
 
         return body.toString();
     }

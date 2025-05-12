@@ -2,9 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Using a script tag to dynamically set the favicon with a path that Vite will process -->
+    <link rel="icon" type="image/png" href="" id="favicon" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <title>MonieBank - Modern Banking Solution</title>
+    <script type="module">
+      // This script will run after the page loads and set the favicon
+      import logoUrl from '/src/assets/logo.png';
+      document.getElementById('favicon').href = logoUrl;
+    </script>
   </head>
   <body>
     <div id="root"></div>

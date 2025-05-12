@@ -17,11 +17,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 
 # Swagger/OpenAPI configuration
 springdoc:
@@ -31,6 +27,8 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
 
+
+# Eureka configuration
 eureka:
   instance:
     hostname: localhost
@@ -38,6 +36,8 @@ eureka:
     instanceId: localhost:${spring.application.name}:${server.port}
     appname: ${spring.application.name}
 
+
+# Actuator endpoints
 management:
   endpoints:
     web:

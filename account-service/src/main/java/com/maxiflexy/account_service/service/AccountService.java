@@ -18,6 +18,9 @@ public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private UserValidationService userValidationService;
+
     public List<AccountDto> getAccountsByUserId(Long userId) {
         return accountRepository.findByUserId(userId).stream()
                 .map(this::convertToDto)
@@ -38,6 +41,11 @@ public class AccountService {
 
     @Transactional
     public AccountDto createAccount(CreateAccountDto createAccountDto) {
+        // Validate user exists in auth-service
+        if (!userValidationService.validateUserExists(createAccountDto.getUserId())) {
+            throw new ResourceNotFoundException("User not found with ID: " + createAccountDto.getUserId());
+        }
+
         Account account = new Account();
         account.setUserId(createAccountDto.getUserId());
         account.setFullName(createAccountDto.getFullName());

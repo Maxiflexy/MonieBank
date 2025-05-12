@@ -29,12 +29,18 @@ public class User {
     @Column(nullable = false)
     private Boolean emailVerified = false;
 
+    private String verificationToken;
+
+    private LocalDateTime verificationTokenExpiryDate;
+
     private String password;
 
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
 
     private String providerId;
+
+    private String contactAddress;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

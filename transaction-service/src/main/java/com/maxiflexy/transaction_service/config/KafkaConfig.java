@@ -1,12 +1,14 @@
-package com.maxiflexy.account_service.config;
+package com.maxiflexy.transaction_service.config;
 
-import com.maxiflexy.account_service.dto.NotificationDto;
+import com.maxiflexy.transaction_service.dto.NotificationDto;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
+@Configuration
 public class KafkaConfig {
 
     @Bean

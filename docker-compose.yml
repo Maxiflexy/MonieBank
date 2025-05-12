@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL databases for each service
   account-db:
-    image: postgres:14
+    image: postgres:17-alpine
     container_name: account-db
     environment:
       POSTGRES_DB: account_service
@@ -75,14 +75,14 @@ services:
       - banking-network
 
   # MailDev for email testing
-  maildev:
-    image: maildev/maildev
-    container_name: maildev
-    ports:
-      - "1080:1080"  # Web interface
-      - "1025:1025"  # SMTP port
-    networks:
-      - banking-network
+#  maildev:
+#    image: maildev/maildev
+#    container_name: maildev
+#    ports:
+#      - "1080:1080"  # Web interface
+#      - "1025:1025"  # SMTP port
+#    networks:
+#      - banking-network
 
 networks:
   banking-network:

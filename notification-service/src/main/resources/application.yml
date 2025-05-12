@@ -7,7 +7,20 @@ spring:
 #  config:
 #    import: optional:configserver:http://localhost:8888
 
-  # This is for direct configuration, but we'll use config server in production
+  # Gmail Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  # Kafka Configuration
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -16,20 +29,19 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: com.com.maxiflexy.notification_service.dto,com.maxiflexy.account_service.dto
-  mail:
-    host: localhost
-    port: 1025
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: false
+        spring.json.trusted.packages: com.maxiflexy.notification_service.dto,com.maxiflexy.transaction_service.dto,com.maxiflexy.account_service.dto
 
+# Eureka configuration
 eureka:
   instance:
     hostname: localhost
     preferIpAddress: false
     instanceId: localhost:${spring.application.name}:${server.port}
     appname: ${spring.application.name}
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

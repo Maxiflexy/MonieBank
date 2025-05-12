@@ -1,14 +1,13 @@
-package com.maxiflexy.account_service.service;
+package com.maxiflexy.transaction_service.service;
 
-import com.maxiflexy.account_service.dto.*;
-import com.maxiflexy.account_service.exception.InsufficientFundsException;
-import com.maxiflexy.account_service.exception.ResourceNotFoundException;
-import com.maxiflexy.account_service.model.Account;
-import com.maxiflexy.account_service.model.Transaction;
-import com.maxiflexy.account_service.enums.TransactionStatus;
-import com.maxiflexy.account_service.enums.TransactionType;
-import com.maxiflexy.account_service.repository.AccountRepository;
-import com.maxiflexy.account_service.repository.TransactionRepository;
+
+import com.maxiflexy.transaction_service.dto.*;
+import com.maxiflexy.transaction_service.enums.TransactionStatus;
+import com.maxiflexy.transaction_service.enums.TransactionType;
+import com.maxiflexy.transaction_service.exception.InsufficientFundsException;
+import com.maxiflexy.transaction_service.exception.ResourceNotFoundException;
+import com.maxiflexy.transaction_service.model.Transaction;
+import com.maxiflexy.transaction_service.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,19 +22,18 @@ import java.time.LocalDateTime;
 public class TransactionService {
 
     @Autowired
-    private AccountRepository accountRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    private AccountService accountService;
 
     @Autowired
     private KafkaTemplate<String, NotificationDto> kafkaTemplate;
 
     @Transactional
     public TransactionDto deposit(Long userId, DepositDto depositDto) {
-
-        Account account = accountRepository.findById(depositDto.getAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        // Get account from account service
+        AccountDto account = accountService.getAccountById(depositDto.getAccountId());
 
         // Verify user owns the account
         if (!account.getUserId().equals(userId)) {
@@ -51,9 +49,9 @@ public class TransactionService {
         transaction.setDescription(depositDto.getDescription());
         transaction.setStatus(TransactionStatus.COMPLETED);
 
-        // Update account balance
-        account.setBalance(account.getBalance().add(depositDto.getAmount()));
-        accountRepository.save(account);
+        // Update account balance via account service
+        BigDecimal newBalance = account.getBalance().add(depositDto.getAmount());
+        accountService.updateBalance(account.getId(), newBalance);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -65,8 +63,8 @@ public class TransactionService {
 
     @Transactional
     public TransactionDto withdraw(Long userId, WithdrawDto withdrawDto) {
-        Account account = accountRepository.findById(withdrawDto.getAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        // Get account from account service
+        AccountDto account = accountService.getAccountById(withdrawDto.getAccountId());
 
         // Verify user owns the account
         if (!account.getUserId().equals(userId)) {
@@ -87,9 +85,9 @@ public class TransactionService {
         transaction.setDescription(withdrawDto.getDescription());
         transaction.setStatus(TransactionStatus.COMPLETED);
 
-        // Update account balance
-        account.setBalance(account.getBalance().subtract(withdrawDto.getAmount()));
-        accountRepository.save(account);
+        // Update account balance via account service
+        BigDecimal newBalance = account.getBalance().subtract(withdrawDto.getAmount());
+        accountService.updateBalance(account.getId(), newBalance);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -101,18 +99,16 @@ public class TransactionService {
 
     @Transactional
     public TransactionDto transfer(Long userId, TransferDto transferDto) {
-        // Get source account
-        Account fromAccount = accountRepository.findById(transferDto.getFromAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Source account not found"));
+        // Get source account from account service
+        AccountDto fromAccount = accountService.getAccountById(transferDto.getFromAccountId());
 
         // Verify user owns the source account
         if (!fromAccount.getUserId().equals(userId)) {
             throw new ResourceNotFoundException("Source account not found for this user");
         }
 
-        // Get destination account
-        Account toAccount = accountRepository.findByAccountNumber(transferDto.getToAccountNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
+        // Get destination account from account service
+        AccountDto toAccount = accountService.getAccountByNumber(transferDto.getToAccountNumber());
 
         // Check if sufficient funds
         if (fromAccount.getBalance().compareTo(transferDto.getAmount()) < 0) {
@@ -139,12 +135,12 @@ public class TransactionService {
         incomingTransaction.setDescription("Transfer from " + fromAccount.getAccountNumber());
         incomingTransaction.setStatus(TransactionStatus.COMPLETED);
 
-        // Update account balances
-        fromAccount.setBalance(fromAccount.getBalance().subtract(transferDto.getAmount()));
-        toAccount.setBalance(toAccount.getBalance().add(transferDto.getAmount()));
+        // Update account balances via account service
+        BigDecimal newFromBalance = fromAccount.getBalance().subtract(transferDto.getAmount());
+        BigDecimal newToBalance = toAccount.getBalance().add(transferDto.getAmount());
 
-        accountRepository.save(fromAccount);
-        accountRepository.save(toAccount);
+        accountService.updateBalance(fromAccount.getId(), newFromBalance);
+        accountService.updateBalance(toAccount.getId(), newToBalance);
 
         Transaction savedOutgoingTransaction = transactionRepository.save(outgoingTransaction);
         transactionRepository.save(incomingTransaction);
@@ -156,6 +152,12 @@ public class TransactionService {
     }
 
     public Page<TransactionDto> getTransactionHistory(Long userId, Long accountId, Pageable pageable) {
+        // First validate that the account belongs to the user
+        AccountDto account = accountService.getAccountById(accountId);
+        if (!account.getUserId().equals(userId)) {
+            throw new ResourceNotFoundException("Account not found for this user");
+        }
+
         Page<Transaction> transactions = transactionRepository.findByAccountId(accountId, pageable);
         return transactions.map(this::convertToDto);
     }
@@ -165,7 +167,7 @@ public class TransactionService {
         return transactions.map(this::convertToDto);
     }
 
-    private void sendDepositNotification(Account account, BigDecimal amount) {
+    private void sendDepositNotification(AccountDto account, BigDecimal amount) {
         NotificationDto notification = new NotificationDto();
         notification.setRecipientEmail(account.getEmail());
         notification.setRecipientName(account.getFullName());
@@ -179,7 +181,7 @@ public class TransactionService {
         kafkaTemplate.send("transaction-notifications", notification);
     }
 
-    private void sendWithdrawalNotification(Account account, BigDecimal amount) {
+    private void sendWithdrawalNotification(AccountDto account, BigDecimal amount) {
         NotificationDto notification = new NotificationDto();
         notification.setRecipientEmail(account.getEmail());
         notification.setRecipientName(account.getFullName());
@@ -193,7 +195,7 @@ public class TransactionService {
         kafkaTemplate.send("transaction-notifications", notification);
     }
 
-    private void sendTransferNotification(Account fromAccount, Account toAccount, BigDecimal amount) {
+    private void sendTransferNotification(AccountDto fromAccount, AccountDto toAccount, BigDecimal amount) {
         // Sender notification
         NotificationDto senderNotification = new NotificationDto();
         senderNotification.setRecipientEmail(fromAccount.getEmail());

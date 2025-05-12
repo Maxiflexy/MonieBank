@@ -8,6 +8,14 @@ spring:
 #    import: optional:configserver:http://localhost:8888
   main:
     web-application-type: reactive
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
 
 management:
   endpoints:
@@ -18,7 +26,7 @@ management:
 # This is for direct configuration, but we'll use config server in production
 app:
   auth:
-    tokenSecret: my_very_confidential_sectet_for_auth_application
+    tokenSecret: my_very_confidential_sectet_for_auth_application_with_sufficient_length_for_security
 
 eureka:
   instance:

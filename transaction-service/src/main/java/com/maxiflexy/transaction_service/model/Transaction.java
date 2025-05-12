@@ -1,7 +1,7 @@
-package com.maxiflexy.account_service.model;
+package com.maxiflexy.transaction_service.model;
 
-import com.maxiflexy.account_service.enums.TransactionStatus;
-import com.maxiflexy.account_service.enums.TransactionType;
+import com.maxiflexy.transaction_service.enums.TransactionStatus;
+import com.maxiflexy.transaction_service.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,11 +33,13 @@ public class Transaction {
     private BigDecimal amount;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private TransactionType type;
 
     private String description;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private TransactionStatus status;
 
     @Column(nullable = false)

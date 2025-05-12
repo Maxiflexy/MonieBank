@@ -1,4 +1,4 @@
-package com.maxiflexy.account_service.enums;
+package com.maxiflexy.transaction_service.enums;
 
 public enum TransactionStatus {
     PENDING,
