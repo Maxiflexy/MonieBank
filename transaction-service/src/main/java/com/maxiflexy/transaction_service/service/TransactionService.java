@@ -115,11 +115,6 @@ public class TransactionService {
         // Get destination account from account service
         AccountDto toAccount = accountService.getAccountByNumber(userId, transferDto.getToAccountNumber());
 
-        // Check if sufficient funds
-        if (fromAccount.getBalance().compareTo(transferDto.getAmount()) < 0) {
-            throw new InsufficientFundsException("Insufficient funds");
-        }
-
         // Create outgoing transaction
         Transaction outgoingTransaction = new Transaction();
         outgoingTransaction.setUserId(userId);
@@ -140,13 +135,10 @@ public class TransactionService {
         incomingTransaction.setDescription("Transfer from " + fromAccount.getAccountNumber());
         incomingTransaction.setStatus(TransactionStatus.COMPLETED);
 
-        // Update account balances via account service
-        BigDecimal newFromBalance = fromAccount.getBalance().subtract(transferDto.getAmount());
-        BigDecimal newToBalance = toAccount.getBalance().add(transferDto.getAmount());
+        // Execute the transfer
+        accountService.transferBetweenAccounts(userId, fromAccount.getId(), toAccount.getId(), transferDto.getAmount());
 
-        accountService.updateBalance(userId, fromAccount.getId(), newFromBalance);
-        accountService.updateBalance(userId, toAccount.getId(), newToBalance);
-
+        // Save transaction records
         Transaction savedOutgoingTransaction = transactionRepository.save(outgoingTransaction);
         transactionRepository.save(incomingTransaction);
 

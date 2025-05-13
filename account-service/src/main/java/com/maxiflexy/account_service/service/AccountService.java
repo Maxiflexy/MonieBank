@@ -2,9 +2,12 @@ package com.maxiflexy.account_service.service;
 
 import com.maxiflexy.account_service.dto.AccountDto;
 import com.maxiflexy.account_service.dto.CreateAccountDto;
+import com.maxiflexy.account_service.dto.TransferBalanceDto;
+import com.maxiflexy.account_service.exception.InsufficientFundsException;
 import com.maxiflexy.account_service.exception.ResourceNotFoundException;
 import com.maxiflexy.account_service.model.Account;
 import com.maxiflexy.account_service.repository.AccountRepository;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,5 +86,29 @@ public class AccountService {
         Account savedAccount = accountRepository.save(account);
 
         return convertToDto(savedAccount);
+    }
+
+    @Transactional
+    public void transferBetweenAccounts(Long userId, @Valid TransferBalanceDto transferDto) {
+        Account fromAccount = accountRepository.findByUserIdAndId(userId, transferDto.getFromAccountId())
+                .orElseThrow(() -> new ResourceNotFoundException("Source account not found"));
+
+        // Get destination account (no ownership verification required)
+        Account toAccount = accountRepository.findById(transferDto.getToAccountId())
+                .orElseThrow(() -> new ResourceNotFoundException("Destination account not found"));
+
+        // Check for sufficient funds
+        if (fromAccount.getBalance().compareTo(transferDto.getAmount()) < 0) {
+            throw new InsufficientFundsException("Insufficient funds for transfer");
+        }
+
+        // Update balances
+        fromAccount.setBalance(fromAccount.getBalance().subtract(transferDto.getAmount()));
+        toAccount.setBalance(toAccount.getBalance().add(transferDto.getAmount()));
+
+        // Save both accounts
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
+
     }
 }

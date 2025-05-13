@@ -2,6 +2,7 @@ package com.maxiflexy.account_service.controller;
 
 import com.maxiflexy.account_service.dto.AccountDto;
 import com.maxiflexy.account_service.dto.CreateAccountDto;
+import com.maxiflexy.account_service.dto.TransferBalanceDto;
 import com.maxiflexy.account_service.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,5 +65,14 @@ public class AccountController {
             @RequestBody BigDecimal newBalance) {
         AccountDto updatedAccount = accountService.updateBalance(userId, accountId, newBalance);
         return ResponseEntity.ok(updatedAccount);
+    }
+
+    @PutMapping("/transfer")
+    @Operation(summary = "Transfer between accounts", description = "Updates balances for two accounts in a transfer")
+    public ResponseEntity<Void> transferBetweenAccounts(
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody TransferBalanceDto transferDto) {
+        accountService.transferBetweenAccounts(userId, transferDto);
+        return ResponseEntity.ok().build();
     }
 }

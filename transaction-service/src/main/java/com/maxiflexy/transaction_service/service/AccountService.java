@@ -1,6 +1,8 @@
 package com.maxiflexy.transaction_service.service;
 
 import com.maxiflexy.transaction_service.dto.AccountDto;
+import com.maxiflexy.transaction_service.dto.TransferBalanceDto;
+import com.maxiflexy.transaction_service.exception.InsufficientFundsException;
 import com.maxiflexy.transaction_service.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -55,6 +57,29 @@ public class AccountService {
                         status -> status.equals(HttpStatus.NOT_FOUND),
                         clientResponse -> Mono.error(new ResourceNotFoundException("Account not found with ID: " + accountId))
                 )
+                .bodyToMono(Void.class)
+                .block();
+    }
+
+    public void transferBetweenAccounts(Long userId, Long fromAccountId, Long toAccountId, BigDecimal amount) {
+        TransferBalanceDto transferDto = new TransferBalanceDto(fromAccountId, toAccountId, amount);
+
+        webClientBuilder.build()
+                .put()
+                .uri("lb://account-service/api/accounts/transfer")
+                .header("X-User-Id", userId.toString())
+                .bodyValue(transferDto)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        clientResponse -> {
+                            if (clientResponse.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                                return Mono.error(new ResourceNotFoundException("One of the accounts was not found"));
+                            } else if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
+                                return Mono.error(new InsufficientFundsException("Insufficient funds for transfer"));
+                            }
+                            return clientResponse.bodyToMono(String.class)
+                                    .flatMap(body -> Mono.error(new RuntimeException("Error during transfer: " + body)));
+                        })
                 .bodyToMono(Void.class)
                 .block();
     }
