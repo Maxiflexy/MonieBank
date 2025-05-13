@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -53,5 +54,15 @@ public class AccountController {
         createAccountDto.setUserId(userId);
         AccountDto createdAccount = accountService.createAccount(createAccountDto);
         return ResponseEntity.ok(createdAccount);
+    }
+
+    @PutMapping("/{accountId}/balance")
+    @Operation(summary = "Update account balance", description = "Updates the balance of an account")
+    public ResponseEntity<AccountDto> updateBalance(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long accountId,
+            @RequestBody BigDecimal newBalance) {
+        AccountDto updatedAccount = accountService.updateBalance(userId, accountId, newBalance);
+        return ResponseEntity.ok(updatedAccount);
     }
 }

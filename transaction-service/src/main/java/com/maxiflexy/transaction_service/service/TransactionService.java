@@ -38,7 +38,7 @@ public class TransactionService {
 
         log.info("userId from request, {}", userId);
         log.info("Deposit request, {}", depositDto);
-        AccountDto account = accountService.getAccountById(depositDto.getAccountId());
+        AccountDto account = accountService.getAccountById(userId, depositDto.getAccountId());
 
         // Verify user owns the account
         if (!account.getUserId().equals(userId)) {
@@ -56,7 +56,7 @@ public class TransactionService {
 
         // Update account balance via account service
         BigDecimal newBalance = account.getBalance().add(depositDto.getAmount());
-        accountService.updateBalance(account.getId(), newBalance);
+        accountService.updateBalance(userId, account.getId(), newBalance);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -69,7 +69,7 @@ public class TransactionService {
     @Transactional
     public TransactionDto withdraw(Long userId, WithdrawDto withdrawDto) {
         // Get account from account service
-        AccountDto account = accountService.getAccountById(withdrawDto.getAccountId());
+        AccountDto account = accountService.getAccountById(userId, withdrawDto.getAccountId());
 
         // Verify user owns the account
         if (!account.getUserId().equals(userId)) {
@@ -92,7 +92,7 @@ public class TransactionService {
 
         // Update account balance via account service
         BigDecimal newBalance = account.getBalance().subtract(withdrawDto.getAmount());
-        accountService.updateBalance(account.getId(), newBalance);
+        accountService.updateBalance(userId, account.getId(), newBalance);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -105,7 +105,7 @@ public class TransactionService {
     @Transactional
     public TransactionDto transfer(Long userId, TransferDto transferDto) {
         // Get source account from account service
-        AccountDto fromAccount = accountService.getAccountById(transferDto.getFromAccountId());
+        AccountDto fromAccount = accountService.getAccountById(userId, transferDto.getFromAccountId());
 
         // Verify user owns the source account
         if (!fromAccount.getUserId().equals(userId)) {
@@ -113,7 +113,7 @@ public class TransactionService {
         }
 
         // Get destination account from account service
-        AccountDto toAccount = accountService.getAccountByNumber(transferDto.getToAccountNumber());
+        AccountDto toAccount = accountService.getAccountByNumber(userId, transferDto.getToAccountNumber());
 
         // Check if sufficient funds
         if (fromAccount.getBalance().compareTo(transferDto.getAmount()) < 0) {
@@ -144,8 +144,8 @@ public class TransactionService {
         BigDecimal newFromBalance = fromAccount.getBalance().subtract(transferDto.getAmount());
         BigDecimal newToBalance = toAccount.getBalance().add(transferDto.getAmount());
 
-        accountService.updateBalance(fromAccount.getId(), newFromBalance);
-        accountService.updateBalance(toAccount.getId(), newToBalance);
+        accountService.updateBalance(userId, fromAccount.getId(), newFromBalance);
+        accountService.updateBalance(userId, toAccount.getId(), newToBalance);
 
         Transaction savedOutgoingTransaction = transactionRepository.save(outgoingTransaction);
         transactionRepository.save(incomingTransaction);
@@ -158,7 +158,7 @@ public class TransactionService {
 
     public Page<TransactionDto> getTransactionHistory(Long userId, Long accountId, Pageable pageable) {
         // First validate that the account belongs to the user
-        AccountDto account = accountService.getAccountById(accountId);
+        AccountDto account = accountService.getAccountById(userId, accountId);
         if (!account.getUserId().equals(userId)) {
             throw new ResourceNotFoundException("Account not found for this user");
         }

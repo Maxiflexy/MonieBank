@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,5 +72,16 @@ public class AccountService {
         dto.setCreatedAt(account.getCreatedAt());
         dto.setUpdatedAt(account.getUpdatedAt());
         return dto;
+    }
+
+    @Transactional
+    public AccountDto updateBalance(Long userId, Long accountId, BigDecimal newBalance) {
+        Account account = accountRepository.findByUserIdAndId(userId, accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+
+        account.setBalance(newBalance);
+        Account savedAccount = accountRepository.save(account);
+
+        return convertToDto(savedAccount);
     }
 }
