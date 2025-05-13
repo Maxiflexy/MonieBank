@@ -18,16 +18,15 @@ public class GatewayConfig {
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
                 // Auth Service Routes (Unsecured)
+                .route("auth-service-verify-email", r -> r.path("/api/auth/verify-email")
+                        .uri("lb://auth-service"))
                 .route("auth-service-signup", r -> r.path("/api/auth/signup")
                         .uri("lb://auth-service"))
                 .route("auth-service-login", r -> r.path("/api/auth/login")
                         .uri("lb://auth-service"))
-                .route("auth-service-oauth2", r -> r.path("/api/auth/oauth2/**")
-                        .uri("lb://auth-service"))
-                // Fix the email verification endpoint to properly handle the token parameter
-                .route("auth-service-verify-email", r -> r.path("/api/auth/verify-email")
-                        .uri("lb://auth-service"))
                 .route("auth-service-resend-verification", r -> r.path("/api/auth/resend-verification")
+                        .uri("lb://auth-service"))
+                .route("auth-service-oauth2", r -> r.path("/api/auth/oauth2/**")
                         .uri("lb://auth-service"))
 
                 // Auth Service Routes (Secured)

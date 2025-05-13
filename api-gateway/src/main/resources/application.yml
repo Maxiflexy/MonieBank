@@ -16,6 +16,8 @@ spring:
             allowedOrigins: "http://localhost:5173"
             allowedMethods: "*"
             allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
 
 management:
   endpoints:

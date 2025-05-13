@@ -12,13 +12,21 @@ const authApi = {
   },
   
   verifyEmail: async (token) => {
-    const response = await axiosInstance.get(`/auth/verify-email?token=${token}`, {
-      maxRedirects: 0, // Prevent redirects
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-    return response.data;
+    try {
+      // Use direct URL to avoid redirect issues
+      const response = await axiosInstance.get(`/auth/verify-email`, {
+        params: { token },
+        headers: {
+          'Accept': 'application/json',
+          'X-No-Redirect': 'true'
+        },
+        maxRedirects: 0
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Email verification error:', error);
+      throw error;
+    }
   },
   
   resendVerification: async (email) => {
