@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  # PostgreSQL databases for each service
-  account-db:
+
+  moniebank:
     image: postgres:17-alpine
-    container_name: account-db
+    container_name: moniebank
     environment:
-      POSTGRES_DB: account_service
+      POSTGRES_DB: moniebank
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
@@ -16,19 +16,34 @@ services:
     networks:
       - banking-network
 
-  auth-db:
-    image: postgres:17-alpine
-    container_name: auth-db
-    environment:
-      POSTGRES_DB: auth_service
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5434:5432"
-    volumes:
-      - auth-data:/var/lib/postgresql/data
-    networks:
-      - banking-network
+#  # PostgreSQL databases for each service
+#  account-db:
+#    image: postgres:17-alpine
+#    container_name: account-db
+#    environment:
+#      POSTGRES_DB: account_service
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: password
+#    ports:
+#      - "5433:5432"
+#    volumes:
+#      - account-data:/var/lib/postgresql/data
+#    networks:
+#      - banking-network
+#
+#  auth-db:
+#    image: postgres:17-alpine
+#    container_name: auth-db
+#    environment:
+#      POSTGRES_DB: auth_service
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: password
+#    ports:
+#      - "5434:5432"
+#    volumes:
+#      - auth-data:/var/lib/postgresql/data
+#    networks:
+#      - banking-network
 
   # PgAdmin for database management
   pgadmin:
@@ -42,8 +57,9 @@ services:
     networks:
       - banking-network
     depends_on:
-      - account-db
-      - auth-db
+      #- account-db
+      #- auth-db
+      - moniebank
 
   # Kafka and Zookeeper for messaging
   zookeeper:

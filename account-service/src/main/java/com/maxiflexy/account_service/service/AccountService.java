@@ -5,6 +5,7 @@ import com.maxiflexy.account_service.dto.CreateAccountDto;
 import com.maxiflexy.account_service.exception.ResourceNotFoundException;
 import com.maxiflexy.account_service.model.Account;
 import com.maxiflexy.account_service.repository.AccountRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class AccountService {
 
@@ -28,6 +30,7 @@ public class AccountService {
     }
 
     public AccountDto getAccountById(Long userId, Long accountId) {
+        log.info("userId from request, {}", userId);
         Account account = accountRepository.findByUserIdAndId(userId, accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
         return convertToDto(account);

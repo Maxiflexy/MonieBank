@@ -36,6 +36,7 @@ public class TransactionController {
     public ResponseEntity<TransactionDto> withdraw(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody WithdrawDto withdrawDto) {
+        System.out.println("userId: " +userId + ",....withdrawDto :" + withdrawDto.toString());
         TransactionDto transaction = transactionService.withdraw(userId, withdrawDto);
         return ResponseEntity.ok(transaction);
     }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateAccountDto {
-    @NotNull
+    //@NotNull
     private Long userId;
 
     @NotBlank

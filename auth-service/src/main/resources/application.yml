@@ -9,7 +9,8 @@ spring:
 
   # This is for direct configuration, but we'll use config server in production
   datasource:
-    url: jdbc:postgresql://localhost:5434/auth_service
+    #url: jdbc:postgresql://localhost:5434/auth_service
+    url: jdbc:postgresql://localhost:5433/moniebank
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver

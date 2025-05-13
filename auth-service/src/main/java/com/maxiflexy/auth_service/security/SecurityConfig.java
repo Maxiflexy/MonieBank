@@ -34,7 +34,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // Configure CORS
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // Disable CSRF
                 .csrf(AbstractHttpConfigurer::disable)
@@ -45,8 +45,9 @@ public class SecurityConfig {
 
                 // Configure authorization rules
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/oauth2/**",
-                                "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                        .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/verify-email",
+                                "/api/auth/resend-verification", "/api/auth/user/{userId}", "/api/auth/oauth2/**", "/api-docs/**",
+                                "/swagger-ui/**", "/swagger-ui.html")
                         .permitAll()
                         .anyRequest()
                         .authenticated()
@@ -66,18 +67,18 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Your frontend URL
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Your frontend URL
+//        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+//        configuration.setAllowCredentials(true);
+//        configuration.setMaxAge(3600L);
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {

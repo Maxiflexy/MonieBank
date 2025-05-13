@@ -49,6 +49,7 @@ public class AccountController {
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody CreateAccountDto createAccountDto) {
         // Ensure the userId in the request body matches the one in the header
+        System.out.println("extracted ID: " +userId.toString());
         createAccountDto.setUserId(userId);
         AccountDto createdAccount = accountService.createAccount(createAccountDto);
         return ResponseEntity.ok(createdAccount);

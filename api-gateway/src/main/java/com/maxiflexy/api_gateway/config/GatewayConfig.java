@@ -28,6 +28,8 @@ public class GatewayConfig {
                         .uri("lb://auth-service"))
                 .route("auth-service-oauth2", r -> r.path("/api/auth/oauth2/**")
                         .uri("lb://auth-service"))
+                .route("auth-service-user-validation", r -> r.path("/api/auth/user/{userId}")
+                        .uri("lb://auth-service"))
 
                 // Auth Service Routes (Secured)
                 .route("auth-service-secured", r -> r.path("/api/auth/**")
@@ -53,3 +55,6 @@ public class GatewayConfig {
                 .build();
     }
 }
+
+
+//https://github.com/Maxiflexy/Job_Portal_App

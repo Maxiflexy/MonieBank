@@ -8,6 +8,7 @@ import com.maxiflexy.transaction_service.exception.InsufficientFundsException;
 import com.maxiflexy.transaction_service.exception.ResourceNotFoundException;
 import com.maxiflexy.transaction_service.model.Transaction;
 import com.maxiflexy.transaction_service.repository.TransactionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class TransactionService {
 
     @Autowired
@@ -33,6 +35,9 @@ public class TransactionService {
     @Transactional
     public TransactionDto deposit(Long userId, DepositDto depositDto) {
         // Get account from account service
+
+        log.info("userId from request, {}", userId);
+        log.info("Deposit request, {}", depositDto);
         AccountDto account = accountService.getAccountById(depositDto.getAccountId());
 
         // Verify user owns the account

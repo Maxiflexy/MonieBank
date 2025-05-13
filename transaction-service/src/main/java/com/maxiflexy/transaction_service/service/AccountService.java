@@ -17,7 +17,7 @@ public class AccountService {
     public AccountDto getAccountById(Long accountId) {
         return webClientBuilder.build()
                 .get()
-                .uri("lb://account-service/api/accounts/{id}", accountId)
+                .uri("lb://account-service/api/accounts/{accountId}", accountId)
                 .retrieve()
                 .onStatus(
                         status -> status.equals(HttpStatus.NOT_FOUND),

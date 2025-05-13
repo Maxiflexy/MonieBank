@@ -41,14 +41,17 @@ public class JwtAuthenticationFilter implements GatewayFilter {
 
         // Extract the token
         String token = authorizationHeader.substring(7);
+        System.out.println("Processing token: " + token);
 
         // Validate token
         if (!isJwtValid(token)) {
+            System.out.println("Invalid token!");
             return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
         }
 
         // Add user id and email to request headers
         Claims claims = getClaims(token);
+        System.out.println("Extracted userId: " + claims.getSubject());
         ServerHttpRequest modifiedRequest = request.mutate()
                 .header("X-User-Id", claims.getSubject())
                 .header("X-User-Email", claims.get("email", String.class))

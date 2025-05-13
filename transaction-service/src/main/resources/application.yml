@@ -9,7 +9,8 @@ spring:
 
   # Database configuration
   datasource:
-    url: jdbc:postgresql://localhost:5433/account_service
+    #url: jdbc:postgresql://localhost:5433/account_service
+    url: jdbc:postgresql://localhost:5433/moniebank
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
