@@ -1,5 +1,6 @@
 package com.maxiflexy.notification_service.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maxiflexy.notification_service.dto.NotificationDto;
 import com.maxiflexy.notification_service.service.NotificationService;
@@ -25,15 +26,16 @@ public class KafkaConsumer {
             topics = "transaction-notifications",
             groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void consumeTransactionNotification(@Payload Object payload) {
-        logger.info("Received transaction notification: {}", payload);
+    public void consumeTransactionNotification(@Payload String payload) {
+        logger.info("Received transaction notification raw payload: {}", payload);
 
         try {
-            // Convert payload to NotificationDto
-            NotificationDto notification = convertToNotificationDto(payload);
+            NotificationDto notification = parsePayload(payload);
+            logger.info("Successfully deserialized transaction notification: {}", notification);
             notificationService.processNotification(notification);
         } catch (Exception e) {
             logger.error("Error processing transaction notification: {}", e.getMessage(), e);
+            logger.error("Raw payload that failed: {}", payload);
         }
     }
 
@@ -41,12 +43,12 @@ public class KafkaConsumer {
             topics = "email-notifications",
             groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void consumeEmailNotification(@Payload Object payload) {
-        logger.info("Received email notification: {}", payload);
+    public void consumeEmailNotification(@Payload String payload) {
+        logger.info("Received email notification raw payload: {}", payload);
 
         try {
-            // Convert payload to NotificationDto
-            NotificationDto notification = convertToNotificationDto(payload);
+            NotificationDto notification = parsePayload(payload);
+            logger.info("Successfully deserialized email notification: {}", notification);
 
             // Handle EMAIL_VERIFICATION notifications differently
             if ("EMAIL_VERIFICATION".equals(notification.getNotificationType())) {
@@ -56,24 +58,24 @@ public class KafkaConsumer {
             }
         } catch (Exception e) {
             logger.error("Error processing email notification: {}", e.getMessage(), e);
+            logger.error("Raw payload that failed: {}", payload);
         }
     }
 
     /**
-     * Converts a payload object to NotificationDto
+     * Parses a payload string that might be a JSON string or a quoted JSON string
      */
-    private NotificationDto convertToNotificationDto(Object payload) {
-        try {
-            if (payload instanceof NotificationDto) {
-                return (NotificationDto) payload;
-            } else if (payload instanceof String) {
-                return objectMapper.readValue((String) payload, NotificationDto.class);
-            } else {
-                return objectMapper.convertValue(payload, NotificationDto.class);
-            }
-        } catch (Exception e) {
-            logger.error("Error converting payload to NotificationDto: {}", e.getMessage());
-            throw new RuntimeException("Failed to convert payload", e);
+    private NotificationDto parsePayload(String payload) throws Exception {
+        // If the payload is a quoted JSON string (starts and ends with quotes)
+        if (payload.startsWith("\"") && payload.endsWith("\"")) {
+            // The payload is a quoted JSON string
+            // First, parse it as a JSON string to get the inner content
+            String innerJson = objectMapper.readValue(payload, String.class);
+            // Then parse the inner content as a NotificationDto
+            return objectMapper.readValue(innerJson, NotificationDto.class);
+        } else {
+            // Regular JSON object
+            return objectMapper.readValue(payload, NotificationDto.class);
         }
     }
 }
