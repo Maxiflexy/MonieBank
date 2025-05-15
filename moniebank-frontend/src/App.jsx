@@ -12,8 +12,13 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import Dashboard from './pages/Dashboard';
 import AccountsPage from './pages/AccountsPage';
+import AccountDetailsPage from './pages/AccountDetailsPage'; // Add this import
 import TransactionsPage from './pages/TransactionsPage';
+import DepositPage from './pages/DepositPage'; // Add these pages
+import WithdrawPage from './pages/WithdrawPage';
+import TransferPage from './pages/TransferPage';
 import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 
 function AppRoutes() {
   return (
@@ -38,6 +43,15 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      {/* Add route for account details */}
+      <Route 
+        path="/accounts/:id" 
+        element={
+          <ProtectedRoute>
+            <AccountDetailsPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/transactions" 
         element={
@@ -46,11 +60,44 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      {/* Add routes for deposit, withdraw, transfer pages */}
+      <Route 
+        path="/deposit" 
+        element={
+          <ProtectedRoute>
+            <DepositPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/withdraw" 
+        element={
+          <ProtectedRoute>
+            <WithdrawPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/transfer" 
+        element={
+          <ProtectedRoute>
+            <TransferPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/profile" 
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         } 
       />

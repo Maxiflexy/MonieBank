@@ -13,14 +13,9 @@ const authApi = {
 
   verifyEmail: async (token) => {
     try {
-      // Use direct URL to avoid redirect issues
+      // Simplified approach - just send the token as a query parameter
       const response = await axiosInstance.get(`/auth/verify-email`, {
         params: { token },
-        headers: {
-          Accept: "application/json",
-          "X-No-Redirect": "true",
-        },
-        maxRedirects: 0,
       });
       return response.data;
     } catch (error) {
@@ -30,7 +25,6 @@ const authApi = {
   },
 
   resendVerification: async (email) => {
-    // Update to use query param instead of body
     const response = await axiosInstance.post(
       `/auth/resend-verification?email=${email}`
     );

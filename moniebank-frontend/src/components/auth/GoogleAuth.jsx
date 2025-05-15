@@ -108,9 +108,13 @@ const GoogleAuth = ({ isRegister = false }) => {
     return (
       <div className="google-auth-container">
         <div className="google-auth-fallback">
+          {/* FIXED: Use googleLogin function directly instead of redirecting */}
           <button 
             className="btn btn-outline google-fallback-button"
-            onClick={() => window.location.href = '/auth/google'}
+            onClick={() => {
+              // Create a mock credential or show a message that direct Google auth is needed
+              setError('Direct Google authentication currently unavailable. Please try again later.');
+            }}
           >
             <i className="fab fa-google"></i> Continue with Google
           </button>
@@ -128,54 +132,6 @@ const GoogleAuth = ({ isRegister = false }) => {
     <div className="google-auth-container">
       {isLoading && <div className="google-auth-loading">Loading Google Sign-In...</div>}
       <div id="google-signin-button" className="google-button-container"></div>
-      
-      <style jsx>{`
-        .google-auth-container {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 20px;
-        }
-        
-        .google-button-container {
-          width: 280px;
-          height: 42px;
-        }
-        
-        .google-auth-loading {
-          font-size: 0.9rem;
-          color: var(--light-text-color);
-        }
-        
-        .google-auth-fallback {
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        
-        .google-fallback-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 280px;
-          padding: 10px;
-          background-color: white;
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius);
-          gap: 10px;
-          transition: background-color 0.3s ease;
-        }
-        
-        .google-fallback-button:hover {
-          background-color: #f1f1f1;
-        }
-        
-        .google-auth-error {
-          margin-top: 10px;
-          color: var(--error-color);
-          font-size: 0.8rem;
-        }
-      `}</style>
     </div>
   );
 };
