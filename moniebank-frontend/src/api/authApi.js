@@ -1,54 +1,58 @@
-import axiosInstance from '../utils/axiosConfig';
+import axiosInstance from "../utils/axiosConfig";
 
 const authApi = {
   register: async (userData) => {
-    const response = await axiosInstance.post('/auth/signup', userData);
+    const response = await axiosInstance.post("/auth/signup", userData);
     return response.data;
   },
-  
+
   login: async (credentials) => {
-    const response = await axiosInstance.post('/auth/login', credentials);
+    const response = await axiosInstance.post("/auth/login", credentials);
     return response.data;
   },
-  
+
   verifyEmail: async (token) => {
     try {
       // Use direct URL to avoid redirect issues
       const response = await axiosInstance.get(`/auth/verify-email`, {
         params: { token },
         headers: {
-          'Accept': 'application/json',
-          'X-No-Redirect': 'true'
+          Accept: "application/json",
+          "X-No-Redirect": "true",
         },
-        maxRedirects: 0
+        maxRedirects: 0,
       });
       return response.data;
     } catch (error) {
-      console.error('Email verification error:', error);
+      console.error("Email verification error:", error);
       throw error;
     }
   },
-  
+
   resendVerification: async (email) => {
     // Update to use query param instead of body
-    const response = await axiosInstance.post(`/auth/resend-verification?email=${email}`);
+    const response = await axiosInstance.post(
+      `/auth/resend-verification?email=${email}`
+    );
     return response.data;
   },
-  
+
   googleLogin: async (tokenId) => {
-    const response = await axiosInstance.post('/auth/oauth2/google', { tokenId });
+    const response = await axiosInstance.post("/auth/oauth2/google", {
+      tokenId,
+    });
     return response.data;
   },
-  
+
   getCurrentUser: async () => {
-    const response = await axiosInstance.get('/auth/user/me');
+    const response = await axiosInstance.get("/auth/user/me");
     return response.data;
   },
-  
+
   updateProfile: async (profileData) => {
-    const response = await axiosInstance.put('/auth/user/update', profileData);
+    const response = await axiosInstance.put("/auth/user/update", profileData);
     return response.data;
-  }
+  },
 };
 
 export default authApi;

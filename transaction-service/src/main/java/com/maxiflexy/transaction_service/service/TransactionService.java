@@ -104,48 +104,74 @@ public class TransactionService {
 
     @Transactional
     public TransactionDto transfer(Long userId, TransferDto transferDto) {
-        // Get source account from account service
-        AccountDto fromAccount = accountService.getAccountById(userId, transferDto.getFromAccountId());
+        try {
+            // Get source account from account service
+            AccountDto fromAccount = accountService.getAccountById(userId, transferDto.getFromAccountId());
 
-        // Verify user owns the source account
-        if (!fromAccount.getUserId().equals(userId)) {
-            throw new ResourceNotFoundException("Source account not found for this user");
+            // Verify user owns the source account
+            if (!fromAccount.getUserId().equals(userId)) {
+                throw new ResourceNotFoundException("Source account not found for this user");
+            }
+
+            // Get destination account from account service
+            AccountDto toAccount;
+            try {
+                toAccount = accountService.getAccountByNumber(userId, transferDto.getToAccountNumber());
+            } catch (ResourceNotFoundException e) {
+                throw new ResourceNotFoundException("Destination account not found. Please check the account number.");
+            }
+
+            // Check sufficient funds
+            if (fromAccount.getBalance().compareTo(transferDto.getAmount()) < 0) {
+                throw new InsufficientFundsException(
+                        "Insufficient funds in account " + fromAccount.getAccountNumber() +
+                                ". Available balance: " + fromAccount.getBalance()
+                );
+            }
+
+            // Create outgoing transaction
+            Transaction outgoingTransaction = new Transaction();
+            outgoingTransaction.setUserId(userId);
+            outgoingTransaction.setAccountId(fromAccount.getId());
+            outgoingTransaction.setTargetAccountId(toAccount.getId());
+            outgoingTransaction.setAmount(transferDto.getAmount());
+            outgoingTransaction.setType(TransactionType.TRANSFER_OUT);
+            outgoingTransaction.setDescription(transferDto.getDescription());
+            outgoingTransaction.setStatus(TransactionStatus.COMPLETED);
+
+            // Create incoming transaction
+            Transaction incomingTransaction = new Transaction();
+            incomingTransaction.setUserId(toAccount.getUserId());
+            incomingTransaction.setAccountId(toAccount.getId());
+            incomingTransaction.setTargetAccountId(fromAccount.getId());
+            incomingTransaction.setAmount(transferDto.getAmount());
+            incomingTransaction.setType(TransactionType.TRANSFER_IN);
+            incomingTransaction.setDescription("Transfer from " + fromAccount.getAccountNumber());
+            incomingTransaction.setStatus(TransactionStatus.COMPLETED);
+
+            // Execute the transfer
+            try {
+                accountService.transferBetweenAccounts(userId, fromAccount.getId(), toAccount.getId(), transferDto.getAmount());
+            } catch (Exception e) {
+                log.error("Transfer failed: {}", e.getMessage());
+                throw new RuntimeException("Failed to process transfer between accounts: " + e.getMessage());
+            }
+
+            // Save transaction records
+            Transaction savedOutgoingTransaction = transactionRepository.save(outgoingTransaction);
+            transactionRepository.save(incomingTransaction);
+
+            // Send notifications
+            sendTransferNotification(fromAccount, toAccount, transferDto.getAmount());
+
+            return convertToDto(savedOutgoingTransaction);
+        } catch (ResourceNotFoundException | InsufficientFundsException e) {
+            // These are already specific exceptions, just rethrow
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error during transfer: {}", e.getMessage(), e);
+            throw new RuntimeException("An unexpected error occurred during transfer. Please try again later.");
         }
-
-        // Get destination account from account service
-        AccountDto toAccount = accountService.getAccountByNumber(userId, transferDto.getToAccountNumber());
-
-        // Create outgoing transaction
-        Transaction outgoingTransaction = new Transaction();
-        outgoingTransaction.setUserId(userId);
-        outgoingTransaction.setAccountId(fromAccount.getId());
-        outgoingTransaction.setTargetAccountId(toAccount.getId());
-        outgoingTransaction.setAmount(transferDto.getAmount());
-        outgoingTransaction.setType(TransactionType.TRANSFER_OUT);
-        outgoingTransaction.setDescription(transferDto.getDescription());
-        outgoingTransaction.setStatus(TransactionStatus.COMPLETED);
-
-        // Create incoming transaction
-        Transaction incomingTransaction = new Transaction();
-        incomingTransaction.setUserId(toAccount.getUserId());
-        incomingTransaction.setAccountId(toAccount.getId());
-        incomingTransaction.setTargetAccountId(fromAccount.getId());
-        incomingTransaction.setAmount(transferDto.getAmount());
-        incomingTransaction.setType(TransactionType.TRANSFER_IN);
-        incomingTransaction.setDescription("Transfer from " + fromAccount.getAccountNumber());
-        incomingTransaction.setStatus(TransactionStatus.COMPLETED);
-
-        // Execute the transfer
-        accountService.transferBetweenAccounts(userId, fromAccount.getId(), toAccount.getId(), transferDto.getAmount());
-
-        // Save transaction records
-        Transaction savedOutgoingTransaction = transactionRepository.save(outgoingTransaction);
-        transactionRepository.save(incomingTransaction);
-
-        // Send notifications
-        sendTransferNotification(fromAccount, toAccount, transferDto.getAmount());
-
-        return convertToDto(savedOutgoingTransaction);
     }
 
     public Page<TransactionDto> getTransactionHistory(Long userId, Long accountId, Pageable pageable) {

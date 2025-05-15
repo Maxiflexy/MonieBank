@@ -1,3 +1,5 @@
+// In moniebank-frontend/src/components/transaction/TransferForm.jsx
+
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
@@ -7,20 +9,13 @@ import transactionApi from '../../api/transactionApi';
 
 const TransferForm = ({ accounts, onComplete }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [targetAccount, setTargetAccount] = useState(null);
   
   const validationSchema = Yup.object({
     fromAccountId: Yup.string()
       .required('Please select source account'),
-    toAccountId: Yup.string()
-      .required('Please select destination account')
-      .test(
-        'not-same-account',
-        'Source and destination accounts must be different',
-        function(value) {
-          const { fromAccountId } = this.parent;
-          return value !== fromAccountId;
-        }
-      ),
+    toAccountNumber: Yup.string()
+      .required('Please enter destination account number'),
     amount: Yup.number()
       .required('Amount is required')
       .positive('Amount must be positive')
@@ -47,7 +42,7 @@ const TransferForm = ({ accounts, onComplete }) => {
     try {
       const transferData = {
         fromAccountId: values.fromAccountId,
-        toAccountId: values.toAccountId,
+        toAccountNumber: values.toAccountNumber,
         amount: parseFloat(values.amount),
         description: values.description || 'Transfer'
       };
@@ -81,10 +76,10 @@ const TransferForm = ({ accounts, onComplete }) => {
     }).format(amount);
   };
   
-  if (accounts.length < 2) {
+  if (accounts.length < 1) {
     return (
       <div className="not-enough-accounts">
-        <p>You need at least two accounts to make a transfer.</p>
+        <p>You need at least one account to make a transfer.</p>
         <a href="/accounts/create" className="btn btn-primary">Create Another Account</a>
       </div>
     );
@@ -95,7 +90,7 @@ const TransferForm = ({ accounts, onComplete }) => {
       <Formik
         initialValues={{ 
           fromAccountId: accounts.length > 0 ? accounts[0].id : '', 
-          toAccountId: accounts.length > 1 ? accounts[1].id : '',
+          toAccountNumber: '',
           amount: '', 
           description: '' 
         }}
@@ -105,41 +100,32 @@ const TransferForm = ({ accounts, onComplete }) => {
       >
         {({ isSubmitting: formikSubmitting, values }) => {
           const sourceAccount = accounts.find(acc => acc.id === values.fromAccountId);
-          const destinationAccount = accounts.find(acc => acc.id === values.toAccountId);
           const availableBalance = sourceAccount ? sourceAccount.balance : 0;
           
           return (
             <Form>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="fromAccountId">From Account</label>
-                  <Field as="select" name="fromAccountId" id="fromAccountId">
-                    <option value="">Select source account</option>
-                    {accounts.map(account => (
-                      <option key={account.id} value={account.id}>
-                        {account.name} ({account.type}) - {formatCurrency(account.balance)}
-                      </option>
-                    ))}
-                  </Field>
-                  <ErrorMessage name="fromAccountId" component="div" className="error-message" />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="toAccountId">To Account</label>
-                  <Field as="select" name="toAccountId" id="toAccountId">
-                    <option value="">Select destination account</option>
-                    {accounts.map(account => (
-                      <option 
-                        key={account.id} 
-                        value={account.id}
-                        disabled={account.id === values.fromAccountId}
-                      >
-                        {account.name} ({account.type}) - {formatCurrency(account.balance)}
-                      </option>
-                    ))}
-                  </Field>
-                  <ErrorMessage name="toAccountId" component="div" className="error-message" />
-                </div>
+              <div className="form-group">
+                <label htmlFor="fromAccountId">From Account</label>
+                <Field as="select" name="fromAccountId" id="fromAccountId">
+                  <option value="">Select source account</option>
+                  {accounts.map(account => (
+                    <option key={account.id} value={account.id}>
+                      {account.fullName || account.name} ({account.accountType}) - {formatCurrency(account.balance)}
+                    </option>
+                  ))}
+                </Field>
+                <ErrorMessage name="fromAccountId" component="div" className="error-message" />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="toAccountNumber">To Account Number</label>
+                <Field 
+                  type="text" 
+                  name="toAccountNumber" 
+                  id="toAccountNumber"
+                  placeholder="Enter destination account number"
+                />
+                <ErrorMessage name="toAccountNumber" component="div" className="error-message" />
               </div>
               
               {sourceAccount && (
@@ -178,11 +164,11 @@ const TransferForm = ({ accounts, onComplete }) => {
                 <div className="summary-details">
                   <div className="summary-row">
                     <span>From:</span>
-                    <span>{sourceAccount ? `${sourceAccount.name} (${sourceAccount.type})` : 'Not selected'}</span>
+                    <span>{sourceAccount ? `${sourceAccount.fullName || sourceAccount.name} (${sourceAccount.accountType})` : 'Not selected'}</span>
                   </div>
                   <div className="summary-row">
-                    <span>To:</span>
-                    <span>{destinationAccount ? `${destinationAccount.name} (${destinationAccount.type})` : 'Not selected'}</span>
+                    <span>To Account Number:</span>
+                    <span>{values.toAccountNumber || 'Not entered'}</span>
                   </div>
                   <div className="summary-row">
                     <span>Amount:</span>
@@ -194,8 +180,8 @@ const TransferForm = ({ accounts, onComplete }) => {
               <div className="transfer-info">
                 <div className="info-icon">ℹ️</div>
                 <p>
-                  Transfers between your accounts are processed immediately.
-                  Please verify all information before confirming.
+                  Please verify the recipient's account number before proceeding.
+                  Transfers cannot be cancelled once confirmed.
                 </p>
               </div>
               
@@ -206,9 +192,7 @@ const TransferForm = ({ accounts, onComplete }) => {
                   isSubmitting || 
                   formikSubmitting || 
                   !sourceAccount || 
-                  !destinationAccount || 
-                  availableBalance <= 0 ||
-                  values.fromAccountId === values.toAccountId
+                  availableBalance <= 0
                 }
               >
                 {isSubmitting || formikSubmitting ? 'Processing...' : 'Complete Transfer'}
@@ -217,139 +201,6 @@ const TransferForm = ({ accounts, onComplete }) => {
           );
         }}
       </Formik>
-      
-      <style jsx>{`
-        .transaction-form {
-          max-width: 600px;
-          margin: 0 auto;
-        }
-        
-        .form-row {
-          display: flex;
-          gap: 20px;
-          margin-bottom: 20px;
-        }
-        
-        .form-group {
-          flex: 1;
-          margin-bottom: 20px;
-        }
-        
-        label {
-          display: block;
-          margin-bottom: 5px;
-          font-weight: 500;
-        }
-        
-        input, select, textarea {
-          width: 100%;
-          padding: 12px;
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius);
-          font-size: 1rem;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-          outline: none;
-          border-color: var(--primary-color);
-        }
-        
-        textarea {
-          height: 100px;
-          resize: vertical;
-        }
-        
-        .error-message {
-          color: var(--error-color);
-          font-size: 0.85rem;
-          margin-top: 5px;
-        }
-        
-        .account-balance-info {
-          background-color: var(--background-color);
-          padding: 12px;
-          border-radius: var(--border-radius);
-          margin-bottom: 20px;
-        }
-        
-        .account-balance-info p {
-          margin: 0;
-          font-size: 0.9rem;
-        }
-        
-        .transfer-summary {
-          background-color: var(--background-color);
-          border-radius: var(--border-radius);
-          padding: 15px;
-          margin-bottom: 20px;
-        }
-        
-        .transfer-summary h3 {
-          margin-top: 0;
-          margin-bottom: 15px;
-          font-size: 1.1rem;
-          color: var(--secondary-color);
-        }
-        
-        .summary-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 8px 0;
-          border-bottom: 1px solid var(--border-color);
-        }
-        
-        .summary-row:last-child {
-          border-bottom: none;
-        }
-        
-        .summary-row span:first-child {
-          font-weight: 500;
-          color: var(--light-text-color);
-        }
-        
-        .transfer-info {
-          display: flex;
-          align-items: flex-start;
-          background-color: rgba(52, 152, 219, 0.1);
-          border-radius: var(--border-radius);
-          padding: 15px;
-          margin-bottom: 20px;
-        }
-        
-        .info-icon {
-          margin-right: 10px;
-          font-size: 1.2rem;
-        }
-        
-        .transfer-info p {
-          margin: 0;
-          font-size: 0.9rem;
-          color: var(--secondary-color);
-        }
-        
-        .btn-block {
-          width: 100%;
-          padding: 12px;
-          font-size: 1rem;
-        }
-        
-        .not-enough-accounts {
-          text-align: center;
-          padding: 30px;
-        }
-        
-        .not-enough-accounts p {
-          margin-bottom: 20px;
-          color: var(--light-text-color);
-        }
-        
-        @media (max-width: 768px) {
-          .form-row {
-            flex-direction: column;
-            gap: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 };
@@ -358,9 +209,11 @@ TransferForm.propTypes = {
   accounts: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      balance: PropTypes.number.isRequired
+      name: PropTypes.string,
+      fullName: PropTypes.string,
+      accountType: PropTypes.string.isRequired,
+      balance: PropTypes.number.isRequired,
+      accountNumber: PropTypes.string
     })
   ).isRequired,
   onComplete: PropTypes.func

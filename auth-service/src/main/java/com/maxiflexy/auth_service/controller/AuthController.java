@@ -1,5 +1,8 @@
 package com.maxiflexy.auth_service.controller;
 
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.maxiflexy.auth_service.dto.response.ApiResponse;
 import com.maxiflexy.auth_service.dto.response.AuthResponse;
 import com.maxiflexy.auth_service.dto.request.LoginRequest;
@@ -14,7 +17,9 @@ import com.maxiflexy.auth_service.service.TokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,13 +29,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
 
 import java.net.URI;
-import java.util.Map;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Authentication API")
+@Slf4j
 public class AuthController {
 
     @Autowired
@@ -47,6 +56,10 @@ public class AuthController {
 
     @Autowired
     private EmailVerificationService emailVerificationService;
+
+    // Get your Google OAuth Client ID from application properties
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String googleClientId;
 
     @PostMapping("/signup")
     @Operation(summary = "Register a new user", description = "Creates a new user account with email and password")
@@ -133,59 +146,70 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getName()));
     }
 
+    // In auth-service/src/main/java/com/maxiflexy/auth_service/controller/AuthController.java
+
+    // In auth-service/src/main/java/com/maxiflexy/auth_service/controller/AuthController.java
+
     @PostMapping("/oauth2/google")
     @Operation(summary = "Google OAuth2 login", description = "Processes Google OAuth2 token and returns JWT")
     public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleTokenRequest tokenRequest) {
-        // Normally you would verify the token with Google here
-        // For this example, we'll simulate the verification process
+        try {
 
-        // Extract user info from token (in a real app, you'd verify with Google)
-        // This is placeholder code - you'd need to implement Google token verification
-        Map<String, String> googleUserInfo = parseAndVerifyGoogleToken(tokenRequest.getTokenId());
+            // Verify the Google ID token using Google's API
+            HttpTransport transport = new NetHttpTransport();
+            JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
-        String email = googleUserInfo.get("email");
-        String name = googleUserInfo.get("name");
-        String googleId = googleUserInfo.get("sub");
-        String imageUrl = googleUserInfo.get("picture");
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
 
-        // Check if user exists
-        User user = userRepository.findByEmail(email).orElse(null);
+            // Verify the token
+            GoogleIdToken idToken = verifier.verify(tokenRequest.getTokenId());
+            if (idToken == null) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(new ApiResponse(false, "Invalid Google token"));
+            }
 
-        if (user == null) {
-            // Create new user
-            user = new User();
-            user.setEmail(email);
-            user.setName(name);
-            user.setImageUrl(imageUrl);
-            user.setProvider(AuthProvider.GOOGLE);
-            user.setProviderId(googleId);
-            user.setEmailVerified(true); // Google verifies emails
+            // Get the payload from the verified token
+            GoogleIdToken.Payload payload = idToken.getPayload();
 
-            user = userRepository.save(user);
-        } else if (user.getProvider() != AuthProvider.GOOGLE) {
+            // Extract user information
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+            String googleId = payload.getSubject();
+            String pictureUrl = (String) payload.get("picture");
+
+            // Check if user exists
+            User user = userRepository.findByEmail(email).orElse(null);
+
+            if (user == null) {
+                // Create new user
+                user = new User();
+                user.setEmail(email);
+                user.setName(name);
+                user.setImageUrl(pictureUrl);
+                user.setProvider(AuthProvider.GOOGLE);
+                user.setProviderId(googleId);
+                user.setEmailVerified(true);
+
+                user = userRepository.save(user);
+            } else if (user.getProvider() != AuthProvider.GOOGLE) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(new ApiResponse(false, "You have previously signed up with " + user.getProvider() +
+                                ". Please use that method to login."));
+            }
+
+            // Generate token
+            String token = tokenProvider.createToken(user);
+
+            return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getName()));
+        } catch (Exception e) {
+            log.error("Google authentication error", e);
             return ResponseEntity
-                    .badRequest()
-                    .body(new ApiResponse(false, "You have previously signed up with " + user.getProvider() +
-                            ". Please use that method to login."));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "Failed to process Google authentication: " + e.getMessage()));
         }
-
-        // Generate token
-        String token = tokenProvider.createToken(user);
-
-        return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getName()));
-    }
-
-    // This is a placeholder - in a real app, you'd verify the token with Google
-    private Map<String, String> parseAndVerifyGoogleToken(String tokenId) {
-        // In a real implementation, you'd use the GoogleIdTokenVerifier to verify the token
-        // For now, we'll simulate a successful verification with dummy data
-
-        // This is just placeholder code - a real implementation would extract this from the verified token
-        return Map.of(
-                "sub", "1234567890", // Google's unique ID for the user
-                "email", "user@example.com",
-                "name", "Test User",
-                "picture", "https://example.com/photo.jpg"
-        );
     }
 }

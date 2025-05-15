@@ -1,39 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import accountApi from '../../api/accountApi';
+import authApi from '../../api/authApi';
+import { useAuth } from '../../hooks/useAuth';
 
 const CreateAccountForm = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   
   const accountTypes = [
-    { value: 'CHECKING', label: 'Checking' },
     { value: 'SAVINGS', label: 'Savings' },
-    { value: 'INVESTMENT', label: 'Investment' }
+    { value: 'CHECKING', label: 'Checking' },
+    { value: 'BUSINESS', label: 'Business' }
   ];
   
   const validationSchema = Yup.object({
-    name: Yup.string()
-      .required('Account name is required')
-      .max(50, 'Account name must be at most 50 characters'),
-    type: Yup.string()
+    fullName: Yup.string()
+      .required('Full name is required')
+      .max(50, 'Full name must be at most 50 characters'),
+    accountType: Yup.string()
       .required('Account type is required')
       .oneOf(accountTypes.map(type => type.value), 'Invalid account type'),
-    initialDeposit: Yup.number()
-      .required('Initial deposit is required')
-      .min(0, 'Initial deposit must be a positive number')
+    email: Yup.string()
+      .email('Invalid email format')
+      .required('Email is required')
   });
   
   const handleSubmit = async (values) => {
     setSubmitting(true);
     try {
+      // Create account with the correct DTO format
       const accountData = {
-        name: values.name,
-        type: values.type,
-        initialDeposit: parseFloat(values.initialDeposit)
+        fullName: values.fullName,
+        email: values.email,
+        accountType: values.accountType
       };
       
       const response = await accountApi.createAccount(accountData);
@@ -53,51 +57,52 @@ const CreateAccountForm = () => {
       setSubmitting(false);
     }
   };
-  
+
   return (
     <div className="create-account-form-container">
       <Formik
-        initialValues={{ name: '', type: '', initialDeposit: '' }}
+        initialValues={{ 
+          fullName: currentUser?.name || '', 
+          email: currentUser?.email || '', 
+          accountType: 'SAVINGS' 
+        }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
         {({ isSubmitting: formikSubmitting }) => (
           <Form className="create-account-form">
             <div className="form-group">
-              <label htmlFor="name">Account Name</label>
+              <label htmlFor="fullName">Full Name</label>
               <Field 
                 type="text" 
-                id="name" 
-                name="name" 
-                placeholder="Enter account name" 
+                id="fullName" 
+                name="fullName" 
+                placeholder="Enter full name" 
               />
-              <ErrorMessage name="name" component="div" className="error-message" />
+              <ErrorMessage name="fullName" component="div" className="error-message" />
             </div>
             
             <div className="form-group">
-              <label htmlFor="type">Account Type</label>
-              <Field as="select" id="type" name="type">
-                <option value="">Select account type</option>
+              <label htmlFor="email">Email</label>
+              <Field 
+                type="email" 
+                id="email" 
+                name="email" 
+                placeholder="Enter email" 
+              />
+              <ErrorMessage name="email" component="div" className="error-message" />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="accountType">Account Type</label>
+              <Field as="select" id="accountType" name="accountType">
                 {accountTypes.map(type => (
                   <option key={type.value} value={type.value}>
                     {type.label}
                   </option>
                 ))}
               </Field>
-              <ErrorMessage name="type" component="div" className="error-message" />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="initialDeposit">Initial Deposit ($)</label>
-              <Field 
-                type="number" 
-                id="initialDeposit" 
-                name="initialDeposit" 
-                placeholder="Enter initial deposit amount" 
-                min="0"
-                step="0.01"
-              />
-              <ErrorMessage name="initialDeposit" component="div" className="error-message" />
+              <ErrorMessage name="accountType" component="div" className="error-message" />
             </div>
             
             <div className="form-actions">
@@ -120,55 +125,6 @@ const CreateAccountForm = () => {
           </Form>
         )}
       </Formik>
-      <style jsx>{`
-        .create-account-form-container {
-          max-width: 600px;
-          margin: 0 auto;
-        }
-        
-        .create-account-form {
-          background-color: white;
-          border-radius: var(--border-radius);
-          box-shadow: var(--box-shadow);
-          padding: 30px;
-        }
-        
-        .form-group {
-          margin-bottom: 20px;
-        }
-        
-        label {
-          display: block;
-          margin-bottom: 5px;
-          font-weight: 500;
-        }
-        
-        input, select {
-          width: 100%;
-          padding: 10px;
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius);
-          font-size: 1rem;
-        }
-        
-        input:focus, select:focus {
-          outline: none;
-          border-color: var(--primary-color);
-        }
-        
-        .error-message {
-          color: var(--error-color);
-          font-size: 0.85rem;
-          margin-top: 5px;
-        }
-        
-        .form-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 15px;
-          margin-top: 30px;
-        }
-      `}</style>
     </div>
   );
 };

@@ -11,6 +11,11 @@ const accountApi = {
     return response.data;
   },
   
+  getAccountByNumber: async (accountNumber) => {
+    const response = await axiosInstance.get(`/accounts/number/${accountNumber}`);
+    return response.data;
+  },
+  
   createAccount: async (accountData) => {
     const response = await axiosInstance.post('/accounts', accountData);
     return response.data;
