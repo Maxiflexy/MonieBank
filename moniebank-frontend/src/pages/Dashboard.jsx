@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [accounts, setAccounts] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(window.innerWidth >= 992);
   
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -37,6 +38,18 @@ const Dashboard = () => {
     };
     
     fetchDashboardData();
+    
+    // Event listener for sidebar visibility
+    const handleSidebarVisibility = (e) => {
+      // This function will be triggered by a custom event from Sidebar component
+      setSidebarVisible(e.detail.visible);
+    };
+    
+    window.addEventListener('sidebarToggle', handleSidebarVisibility);
+    
+    return () => {
+      window.removeEventListener('sidebarToggle', handleSidebarVisibility);
+    };
   }, []);
   
   if (loading) {
@@ -45,7 +58,7 @@ const Dashboard = () => {
         <Navbar />
         <div className="dashboard-container">
           <Sidebar />
-          <main className="dashboard-content">
+          <main className={`dashboard-content ${!sidebarVisible ? 'content-full' : ''}`}>
             <div className="loading">Loading dashboard data...</div>
           </main>
         </div>
@@ -61,7 +74,7 @@ const Dashboard = () => {
       <div className="dashboard-container">
         <Sidebar />
         
-        <main className="dashboard-content">
+        <main className={`dashboard-content ${!sidebarVisible ? 'content-full' : ''}`}>
           <h1>Welcome, {currentUser?.name || 'User'}!</h1>
           
           <section className="accounts-overview">
@@ -114,15 +127,15 @@ const Dashboard = () => {
           <section className="quick-actions">
             <h2>Quick Actions</h2>
             <div className="actions-grid">
-              <Link to="/transactions/deposit" className="action-card">
+              <Link to="/deposit" className="action-card">
                 <div className="action-icon">💰</div>
                 <h3>Deposit</h3>
               </Link>
-              <Link to="/transactions/withdraw" className="action-card">
+              <Link to="/withdraw" className="action-card">
                 <div className="action-icon">💸</div>
                 <h3>Withdraw</h3>
               </Link>
-              <Link to="/transactions/transfer" className="action-card">
+              <Link to="/transfer" className="action-card">
                 <div className="action-icon">↗️</div>
                 <h3>Transfer</h3>
               </Link>

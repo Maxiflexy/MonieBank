@@ -19,18 +19,20 @@ const TransactionList = ({ transactions }) => {
 
   // Get appropriate icon based on transaction type
   const getTransactionIcon = (type) => {
-    switch(type?.toLowerCase()) {
-      case 'deposit':
+    switch(type?.toUpperCase()) {
+      case 'DEPOSIT':
         return '⬇️';
-      case 'withdrawal':
+      case 'WITHDRAWAL':
         return '⬆️';
-      case 'transfer':
-        return '↔️';
-      case 'payment':
+      case 'TRANSFER_OUT':
+        return '↗️';
+      case 'TRANSFER_IN':
+        return '↘️';
+      case 'PAYMENT':
         return '💵';
-      case 'fee':
+      case 'FEE':
         return '💸';
-      case 'interest':
+      case 'INTEREST':
         return '💰';
       default:
         return '🔄';
@@ -38,14 +40,31 @@ const TransactionList = ({ transactions }) => {
   };
 
   // Get appropriate color based on transaction type
-  const getAmountClass = (type, amount) => {
-    if (type?.toLowerCase() === 'deposit' || type?.toLowerCase() === 'interest') {
+  const getAmountClass = (type) => {
+    // Convert type to uppercase for consistent comparison
+    const upperType = type?.toUpperCase();
+    
+    if (upperType === 'DEPOSIT' || upperType === 'INTEREST' || upperType === 'TRANSFER_IN') {
       return 'amount-positive';
-    } else if (type?.toLowerCase() === 'withdrawal' || type?.toLowerCase() === 'fee') {
+    } else if (upperType === 'WITHDRAWAL' || upperType === 'FEE' || upperType === 'TRANSFER_OUT' || upperType === 'PAYMENT') {
       return 'amount-negative';
-    } else {
-      return amount >= 0 ? 'amount-positive' : 'amount-negative';
     }
+    
+    // Default case
+    return '';
+  };
+  
+  // Get prefix based on transaction type
+  const getAmountPrefix = (type) => {
+    const upperType = type?.toUpperCase();
+    
+    if (upperType === 'DEPOSIT' || upperType === 'INTEREST' || upperType === 'TRANSFER_IN') {
+      return '+ ';
+    } else if (upperType === 'WITHDRAWAL' || upperType === 'FEE' || upperType === 'TRANSFER_OUT' || upperType === 'PAYMENT') {
+      return '- ';
+    }
+    
+    return '';
   };
 
   return (
@@ -57,10 +76,10 @@ const TransactionList = ({ transactions }) => {
           </div>
           <div className="transaction-info">
             <h4 className="transaction-title">{transaction.description || transaction.type}</h4>
-            <p className="transaction-date">{formatDate(transaction.date || new Date())}</p>
+            <p className="transaction-date">{formatDate(transaction.transactionDate || transaction.date || new Date())}</p>
           </div>
-          <div className={`transaction-amount ${getAmountClass(transaction.type, transaction.amount)}`}>
-            {transaction.type?.toLowerCase() === 'deposit' ? '+ ' : transaction.type?.toLowerCase() === 'withdrawal' ? '- ' : ''}
+          <div className={`transaction-amount ${getAmountClass(transaction.type)}`}>
+            {getAmountPrefix(transaction.type)}
             {formatCurrency(Math.abs(transaction.amount || 0))}
           </div>
         </div>
@@ -139,7 +158,8 @@ TransactionList.propTypes = {
       description: PropTypes.string,
       type: PropTypes.string,
       amount: PropTypes.number,
-      date: PropTypes.string
+      date: PropTypes.string,
+      transactionDate: PropTypes.string
     })
   ).isRequired
 };

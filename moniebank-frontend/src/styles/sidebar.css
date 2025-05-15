@@ -10,6 +10,7 @@
   padding-top: 70px; /* Space for navbar */
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease; /* For smooth toggle animation */
 }
 
 .sidebar-user {
@@ -120,14 +121,46 @@
   margin-right: 10px;
 }
 
+/* Add these new classes for the sidebar toggle functionality */
+.sidebar-hidden {
+  transform: translateX(-100%);
+}
+
+.sidebar-visible {
+  transform: translateX(0);
+}
+
+/* Toggle button styles - REPOSITIONED higher up */
+.sidebar-toggle {
+  position: fixed;
+  left: 10px;
+  bottom: 100px; /* Moved higher up to avoid the logout button */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border: none;
+  font-size: 1.2rem;
+}
+
 /* Responsive styles */
 @media (max-width: 992px) {
   .sidebar {
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
   }
-
-  .sidebar.open {
+  
+  .sidebar.sidebar-visible {
     transform: translateX(0);
+  }
+  
+  .dashboard-content {
+    margin-left: 0; /* Full width on mobile */
   }
 }

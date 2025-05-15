@@ -1,9 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import '../../styles/footer.css';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const location = useLocation();
+  
+  // Check if we're on the landing page
+  const isLandingPage = location.pathname === '/';
+  
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   
   return (
     <footer className="footer">
@@ -23,13 +34,34 @@ const Footer = () => {
                 <Link to="/">Home</Link>
               </li>
               <li>
-                <Link to="/about">About</Link>
+                {isLandingPage ? (
+                  <a href="#about" onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection('about');
+                  }}>About</a>
+                ) : (
+                  <Link to="/#about">About</Link>
+                )}
               </li>
               <li>
-                <Link to="/features">Features</Link>
+                {isLandingPage ? (
+                  <a href="#features" onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection('features');
+                  }}>Features</a>
+                ) : (
+                  <Link to="/#features">Features</Link>
+                )}
               </li>
               <li>
-                <Link to="/contact">Contact</Link>
+                {isLandingPage ? (
+                  <a href="#contact" onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection('contact');
+                  }}>Contact</a>
+                ) : (
+                  <Link to="/#contact">Contact</Link>
+                )}
               </li>
             </ul>
           </div>
@@ -38,13 +70,13 @@ const Footer = () => {
             <h3 className="footer-title">Legal</h3>
             <ul className="footer-links">
               <li>
-                <Link to="/terms">Terms of Service</Link>
+                <Link to="/">Terms of Service</Link>
               </li>
               <li>
-                <Link to="/privacy">Privacy Policy</Link>
+                <Link to="/">Privacy Policy</Link>
               </li>
               <li>
-                <Link to="/security">Security</Link>
+                <Link to="/">Security</Link>
               </li>
             </ul>
           </div>
@@ -58,11 +90,11 @@ const Footer = () => {
               </li>
               <li>
                 <span className="contact-label">Phone:</span>
-                <a href="tel:+1234567890">+1 (234) 567-890</a>
+                <a href="tel:+2348187626932">+(234) 81-8762-6932</a>
               </li>
               <li>
                 <span className="contact-label">Address:</span>
-                <p>123 Banking Street, Finance City</p>
+                <p>Lagos, Nigeria</p>
               </li>
             </ul>
           </div>
