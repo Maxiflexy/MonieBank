@@ -174,82 +174,82 @@ services:
         condition: service_healthy
     networks:
       - banking-network
-#
-#  # Account Service
-#  account-service:
-#    build:
-#      context: ./account-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8082:8082"
-#    environment:
-#      - SPRING_APPLICATION_NAME=account-service
-#      - SERVER_PORT=8082
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
-#      - SPRING_DATASOURCE_USERNAME=moniebank-db
-#      - SPRING_DATASOURCE_PASSWORD=password1234#
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
-#    depends_on:
-#      eureka-service:
-#        condition: service_healthy
-#    networks:
-#      - banking-network
-#
-#  # Notification Service
-#  notification-service:
-#    build:
-#      context: ./notification-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8083:8083"
-#    environment:
-#      - SPRING_APPLICATION_NAME=notification-service
-#      - SERVER_PORT=8083
-#      - SPRING_MAIL_HOST=13.61.173.52
-#      - SPRING_MAIL_PORT=1025
-#      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
-#    depends_on:
-#      eureka-service:
-#        condition: service_healthy
-#    networks:
-#      - banking-network
-#
-#  # Transaction Service
-#  transaction-service:
-#    build:
-#      context: ./transaction-service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8084:8084"
-#    environment:
-#      - SPRING_APPLICATION_NAME=transaction-service
-#      - SERVER_PORT=8084
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
-#      - SPRING_DATASOURCE_USERNAME=moniebank-db
-#      - SPRING_DATASOURCE_PASSWORD=password1234#
-#      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
-#    depends_on:
-#      eureka-service:
-#        condition: service_healthy
-#    networks:
-#      - banking-network
-#
-#  # Frontend Service
-#  frontend:
-#    build:
-#      context: ./moniebank-frontend
-#      dockerfile: Dockerfile
-#      args:
-#        - VITE_API_BASE_URL=http://localhost:8080/api
-#        - VITE_GOOGLE_CLIENT_ID=916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com
-#    ports:
-#      - "80:80"
-#    depends_on:
-#      - api-gateway
-#    networks:
-#      - banking-network
+
+  # Account Service
+  account-service:
+    build:
+      context: ./account-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_APPLICATION_NAME=account-service
+      - SERVER_PORT=8082
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
+      - SPRING_DATASOURCE_USERNAME=moniebank-db
+      - SPRING_DATASOURCE_PASSWORD=password1234#
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+    networks:
+      - banking-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_APPLICATION_NAME=notification-service
+      - SERVER_PORT=8083
+      - SPRING_MAIL_HOST=13.61.173.52
+      - SPRING_MAIL_PORT=1025
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+    networks:
+      - banking-network
+
+  # Transaction Service
+  transaction-service:
+    build:
+      context: ./transaction-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_APPLICATION_NAME=transaction-service
+      - SERVER_PORT=8084
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
+      - SPRING_DATASOURCE_USERNAME=moniebank-db
+      - SPRING_DATASOURCE_PASSWORD=password1234#
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+    networks:
+      - banking-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./moniebank-frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://localhost:8080/api
+        - VITE_GOOGLE_CLIENT_ID=916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - banking-network
 
 networks:
   banking-network:
