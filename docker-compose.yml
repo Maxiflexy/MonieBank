@@ -125,6 +125,8 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=eureka-server
       - SERVER_PORT=8761
+      - EUREKA_INSTANCE_HOSTNAME=eureka-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
@@ -144,6 +146,8 @@ services:
       - SPRING_APPLICATION_NAME=api-gateway
       - SERVER_PORT=8080
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=api-gateway
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -165,10 +169,12 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password1234#
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
-      - APP_FRONTEND_BASE-URL=http://frontend:80/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=auth-service
+      - APP_FRONTEND_BASE-URL=http://${HOST_ADDRESS:-localhost}:80/
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT-URI=http://localhost:8080/api/auth/oauth2/callback/{registrationId}
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT-URI=http://${HOST_ADDRESS:-localhost}:80/api/auth/oauth2/callback/{registrationId}
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -189,6 +195,8 @@ services:
       - SPRING_DATASOURCE_USERNAME=moniebank-db
       - SPRING_DATASOURCE_PASSWORD=password1234#
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=account-service
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -209,6 +217,8 @@ services:
       - SPRING_MAIL_PORT=1025
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=account-service
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -230,6 +240,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password1234#
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=account-service
     depends_on:
       eureka-service:
         condition: service_healthy
