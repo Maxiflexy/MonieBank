@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.maxiflexy</groupId>
 	<artifactId>account-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<name>account-service</name>
 	<description>Account Service for Banking Microservices</description>
 	<url/>

@@ -1,107 +1,256 @@
+#services:
+#
+##  moniebank:
+##    image: postgres:17-alpine
+##    container_name: moniebank
+##    environment:
+##      POSTGRES_DB: moniebank
+##      POSTGRES_USER: postgres
+##      POSTGRES_PASSWORD: password
+##    ports:
+##      - "5433:5432"
+##    volumes:
+##      - account-data:/var/lib/postgresql/data
+##    networks:
+##      - banking-network
+#
+##  # PostgreSQL databases for each service
+##  account-db:
+##    image: postgres:17-alpine
+##    container_name: account-db
+##    environment:
+##      POSTGRES_DB: account_service
+##      POSTGRES_USER: postgres
+##      POSTGRES_PASSWORD: password
+##    ports:
+##      - "5433:5432"
+##    volumes:
+##      - account-data:/var/lib/postgresql/data
+##    networks:
+##      - banking-network
+##
+##  auth-db:
+##    image: postgres:17-alpine
+##    container_name: auth-db
+##    environment:
+##      POSTGRES_DB: auth_service
+##      POSTGRES_USER: postgres
+##      POSTGRES_PASSWORD: password
+##    ports:
+##      - "5434:5432"
+##    volumes:
+##      - auth-data:/var/lib/postgresql/data
+##    networks:
+##      - banking-network
+#
+#  # PgAdmin for database management
+#  pgadmin:
+#    image: dpage/pgadmin4:latest
+#    container_name: pgadmin
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+#      PGADMIN_DEFAULT_PASSWORD: admin
+#    ports:
+#      - "5050:80"
+#    networks:
+#      - banking-network
+#    #depends_on:
+#      #- account-db
+#      #- auth-db
+#      #- moniebank
+#
+#  # Kafka and Zookeeper for messaging
+#  zookeeper:
+#    image: confluentinc/cp-zookeeper:7.3.0
+#    container_name: zookeeper
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+#      ZOOKEEPER_TICK_TIME: 2000
+#    ports:
+#      - "2181:2181"
+#    networks:
+#      - banking-network
+#
+#  kafka:
+#    image: confluentinc/cp-kafka:7.3.0
+#    container_name: kafka
+#    depends_on:
+#      - zookeeper
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_BROKER_ID: 1
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+#      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#    networks:
+#      - banking-network
+##
+#  # MailDev for email testing
+#  maildev:
+#    image: maildev/maildev
+#    container_name: maildev
+#    ports:
+#      - "1080:1080"  # Web interface
+#      - "1025:1025"  # SMTP port
+#    networks:
+#      - banking-network
+#
+#networks:
+#  banking-network:
+#    driver: bridge
+#
+#volumes:
+#  account-data:
+#  auth-data:
+
+
+
+
+
+
+
+version: '3.8'
+
 services:
-
-#  moniebank:
-#    image: postgres:17-alpine
-#    container_name: moniebank
-#    environment:
-#      POSTGRES_DB: moniebank
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: password
-#    ports:
-#      - "5433:5432"
-#    volumes:
-#      - account-data:/var/lib/postgresql/data
-#    networks:
-#      - banking-network
-
-#  # PostgreSQL databases for each service
-#  account-db:
-#    image: postgres:17-alpine
-#    container_name: account-db
-#    environment:
-#      POSTGRES_DB: account_service
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: password
-#    ports:
-#      - "5433:5432"
-#    volumes:
-#      - account-data:/var/lib/postgresql/data
-#    networks:
-#      - banking-network
-#
-#  auth-db:
-#    image: postgres:17-alpine
-#    container_name: auth-db
-#    environment:
-#      POSTGRES_DB: auth_service
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: password
-#    ports:
-#      - "5434:5432"
-#    volumes:
-#      - auth-data:/var/lib/postgresql/data
-#    networks:
-#      - banking-network
-
-  # PgAdmin for database management
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+  # Discovery Service
+  eureka-service:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
     ports:
-      - "5050:80"
-    networks:
-      - banking-network
-    #depends_on:
-      #- account-db
-      #- auth-db
-      #- moniebank
-
-  # Kafka and Zookeeper for messaging
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.3.0
-    container_name: zookeeper
+      - "8761:8761"
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
+      - SPRING_APPLICATION_NAME=eureka-server
+      - SERVER_PORT=8761
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - banking-network
 
-  kafka:
-    image: confluentinc/cp-kafka:7.3.0
-    container_name: kafka
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_APPLICATION_NAME=api-gateway
+      - SERVER_PORT=8080
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
     depends_on:
-      - zookeeper
+      eureka-service:
+        condition: service_healthy
+    networks:
+      - banking-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
     ports:
-      - "9092:9092"
+      - "8081:8081"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      - SPRING_APPLICATION_NAME=auth-service
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
+      - SPRING_DATASOURCE_USERNAME=moniebank-db
+      - SPRING_DATASOURCE_PASSWORD=password1234#
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - APP_FRONTEND_BASE-URL=http://frontend:80/
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT-URI=http://localhost:8080/api/auth/oauth2/callback/{registrationId}
+    depends_on:
+      eureka-service:
+        condition: service_healthy
     networks:
       - banking-network
 #
-  # MailDev for email testing
-  maildev:
-    image: maildev/maildev
-    container_name: maildev
-    ports:
-      - "1080:1080"  # Web interface
-      - "1025:1025"  # SMTP port
-    networks:
-      - banking-network
+#  # Account Service
+#  account-service:
+#    build:
+#      context: ./account-service
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8082:8082"
+#    environment:
+#      - SPRING_APPLICATION_NAME=account-service
+#      - SERVER_PORT=8082
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
+#      - SPRING_DATASOURCE_USERNAME=moniebank-db
+#      - SPRING_DATASOURCE_PASSWORD=password1234#
+#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+#    depends_on:
+#      eureka-service:
+#        condition: service_healthy
+#    networks:
+#      - banking-network
+#
+#  # Notification Service
+#  notification-service:
+#    build:
+#      context: ./notification-service
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8083:8083"
+#    environment:
+#      - SPRING_APPLICATION_NAME=notification-service
+#      - SERVER_PORT=8083
+#      - SPRING_MAIL_HOST=13.61.173.52
+#      - SPRING_MAIL_PORT=1025
+#      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+#    depends_on:
+#      eureka-service:
+#        condition: service_healthy
+#    networks:
+#      - banking-network
+#
+#  # Transaction Service
+#  transaction-service:
+#    build:
+#      context: ./transaction-service
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8084:8084"
+#    environment:
+#      - SPRING_APPLICATION_NAME=transaction-service
+#      - SERVER_PORT=8084
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
+#      - SPRING_DATASOURCE_USERNAME=moniebank-db
+#      - SPRING_DATASOURCE_PASSWORD=password1234#
+#      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
+#    depends_on:
+#      eureka-service:
+#        condition: service_healthy
+#    networks:
+#      - banking-network
+#
+#  # Frontend Service
+#  frontend:
+#    build:
+#      context: ./moniebank-frontend
+#      dockerfile: Dockerfile
+#      args:
+#        - VITE_API_BASE_URL=http://localhost:8080/api
+#        - VITE_GOOGLE_CLIENT_ID=916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com
+#    ports:
+#      - "80:80"
+#    depends_on:
+#      - api-gateway
+#    networks:
+#      - banking-network
 
 networks:
   banking-network:
     driver: bridge
-
-volumes:
-  account-data:
-  auth-data:
