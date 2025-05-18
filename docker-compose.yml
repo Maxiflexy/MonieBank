@@ -1,18 +1,18 @@
 services:
 
-  moniebank:
-    image: postgres:17-alpine
-    container_name: moniebank
-    environment:
-      POSTGRES_DB: moniebank
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5433:5432"
-    volumes:
-      - account-data:/var/lib/postgresql/data
-    networks:
-      - banking-network
+#  moniebank:
+#    image: postgres:17-alpine
+#    container_name: moniebank
+#    environment:
+#      POSTGRES_DB: moniebank
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: password
+#    ports:
+#      - "5433:5432"
+#    volumes:
+#      - account-data:/var/lib/postgresql/data
+#    networks:
+#      - banking-network
 
 #  # PostgreSQL databases for each service
 #  account-db:
@@ -54,10 +54,10 @@ services:
       - "5050:80"
     networks:
       - banking-network
-    depends_on:
+    #depends_on:
       #- account-db
       #- auth-db
-      - moniebank
+      #- moniebank
 
   # Kafka and Zookeeper for messaging
   zookeeper:
@@ -87,7 +87,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - banking-network
-
+#
   # MailDev for email testing
   maildev:
     image: maildev/maildev
