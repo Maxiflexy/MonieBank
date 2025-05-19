@@ -17,6 +17,9 @@ spring:
     #password: password
     password: password1234#
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
   jpa:
     hibernate:
       ddl-auto: update
@@ -39,12 +42,19 @@ springdoc:
     operationsSorter: method
 
 # Eureka configuration
+#eureka:
+#  instance:
+#    hostname: localhost
+#    preferIpAddress: false
+#    instanceId: localhost:${spring.application.name}:${server.port}
+#    appname: ${spring.application.name}
+
 eureka:
   instance:
-    hostname: localhost
-    preferIpAddress: false
-    instanceId: localhost:${spring.application.name}:${server.port}
-    appname: ${spring.application.name}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-service:8761/eureka/
 
 # Actuator endpoints
 management:

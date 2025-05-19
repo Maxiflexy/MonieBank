@@ -33,9 +33,17 @@ app:
   auth:
     tokenSecret: my_very_confidential_sectet_for_auth_application_with_sufficient_length_for_security
 
+#eureka:
+#  instance:
+#    hostname: localhost
+#    preferIpAddress: false
+#    instanceId: localhost:${spring.application.name}:${server.port}
+#    appname: ${spring.application.name}
+
+
 eureka:
   instance:
-    hostname: localhost
-    preferIpAddress: false
-    instanceId: localhost:${spring.application.name}:${server.port}
-    appname: ${spring.application.name}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-service:8761/eureka/

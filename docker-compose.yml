@@ -108,9 +108,7 @@
 
 
 
-
-
-
+#################################################################################
 
 version: '3.8'
 
@@ -167,7 +165,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
       - SPRING_DATASOURCE_USERNAME=moniebank-db
       - SPRING_DATASOURCE_PASSWORD=password1234#
-      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=16.171.9.59:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=auth-service
@@ -213,12 +211,12 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=notification-service
       - SERVER_PORT=8083
-      - SPRING_MAIL_HOST=13.61.173.52
+      - SPRING_MAIL_HOST=16.171.9.59
       - SPRING_MAIL_PORT=1025
-      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=16.171.9.59:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
-      - EUREKA_INSTANCE_HOSTNAME=account-service
+      - EUREKA_INSTANCE_HOSTNAME=notification-service
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -238,10 +236,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
       - SPRING_DATASOURCE_USERNAME=moniebank-db
       - SPRING_DATASOURCE_PASSWORD=password1234#
-      - SPRING_KAFKA_BOOTSTRAP-SERVERS=13.61.173.52:9092
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=16.171.9.59:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
-      - EUREKA_INSTANCE_HOSTNAME=account-service
+      - EUREKA_INSTANCE_HOSTNAME=transaction-service
     depends_on:
       eureka-service:
         condition: service_healthy

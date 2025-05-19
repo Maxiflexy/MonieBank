@@ -35,13 +35,19 @@ springdoc:
 
 
 # Eureka configuration
+#eureka:
+#  instance:
+#    hostname: localhost
+#    preferIpAddress: false
+#    instanceId: localhost:${spring.application.name}:${server.port}
+#    appname: ${spring.application.name}
+
 eureka:
   instance:
-    hostname: localhost
-    preferIpAddress: false
-    instanceId: localhost:${spring.application.name}:${server.port}
-    appname: ${spring.application.name}
-
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-service:8761/eureka/
 
 # Actuator endpoints
 management:
