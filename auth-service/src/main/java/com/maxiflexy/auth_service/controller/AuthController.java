@@ -8,6 +8,8 @@ import com.maxiflexy.auth_service.dto.response.AuthResponse;
 import com.maxiflexy.auth_service.dto.request.LoginRequest;
 import com.maxiflexy.auth_service.dto.request.SignUpRequest;
 import com.maxiflexy.auth_service.dto.request.GoogleTokenRequest;
+import com.maxiflexy.auth_service.dto.request.RefreshTokenRequest;
+import com.maxiflexy.auth_service.dto.request.LogoutRequest;
 import com.maxiflexy.auth_service.enums.AuthProvider;
 import com.maxiflexy.auth_service.exception.ResourceNotFoundException;
 import com.maxiflexy.auth_service.model.User;
@@ -35,6 +37,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -121,7 +124,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")
+    @Operation(summary = "User login", description = "Authenticates a user and returns JWT tokens")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         // Check if email is verified for local users
         User user = userRepository.findByEmail(loginRequest.getEmail())
@@ -141,14 +144,118 @@ public class AuthController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = tokenProvider.createToken(user);
 
-        return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getName()));
+        // Create both access and refresh tokens
+        Map<String, Object> tokens = tokenProvider.createTokens(user);
+
+        return ResponseEntity.ok(new AuthResponse(
+                (String) tokens.get("accessToken"),
+                (String) tokens.get("refreshToken"),
+                (Long) tokens.get("accessTokenExpiresIn"),
+                (Long) tokens.get("refreshTokenExpiresIn"),
+                user.getId(),
+                user.getEmail(),
+                user.getName()
+        ));
     }
 
-    // In auth-service/src/main/java/com/maxiflexy/auth_service/controller/AuthController.java
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token", description = "Generate new access token using refresh token")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        try {
+            String refreshToken = refreshTokenRequest.getRefreshToken();
 
-    // In auth-service/src/main/java/com/maxiflexy/auth_service/controller/AuthController.java
+            // Validate refresh token
+            if (!tokenProvider.validateRefreshToken(refreshToken)) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse(false, "Invalid or expired refresh token. Please login again."));
+            }
+
+            // Get user from refresh token
+            Long userId = tokenProvider.getUserIdFromToken(refreshToken);
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+            // Blacklist the old refresh token
+            tokenProvider.blacklistToken(refreshToken);
+
+            // Create new tokens
+            Map<String, Object> tokens = tokenProvider.createTokens(user);
+
+            return ResponseEntity.ok(new AuthResponse(
+                    (String) tokens.get("accessToken"),
+                    (String) tokens.get("refreshToken"),
+                    (Long) tokens.get("accessTokenExpiresIn"),
+                    (Long) tokens.get("refreshTokenExpiresIn"),
+                    user.getId(),
+                    user.getEmail(),
+                    user.getName()
+            ));
+
+        } catch (Exception e) {
+            log.error("Error refreshing token: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Invalid refresh token. Please login again."));
+        }
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "User logout", description = "Logout user and blacklist tokens")
+    public ResponseEntity<?> logout(
+            @RequestHeader("Authorization") String bearerToken,
+            @RequestBody(required = false) LogoutRequest logoutRequest) {
+        try {
+            // Extract access token from header
+            String accessToken = null;
+            if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+                accessToken = bearerToken.substring(7);
+            }
+
+            if (accessToken != null && tokenProvider.validateToken(accessToken)) {
+                Long userId = tokenProvider.getUserIdFromToken(accessToken);
+
+                // Blacklist access token
+                tokenProvider.blacklistToken(accessToken);
+
+                // Blacklist refresh token if provided
+                if (logoutRequest != null && logoutRequest.getRefreshToken() != null) {
+                    tokenProvider.blacklistToken(logoutRequest.getRefreshToken());
+                }
+
+                // If logout from all devices is requested
+                if (logoutRequest != null && logoutRequest.isLogoutFromAllDevices()) {
+                    tokenProvider.blacklistAllUserTokens(userId);
+                }
+
+                return ResponseEntity.ok(new ApiResponse(true, "Logged out successfully"));
+            } else {
+                return ResponseEntity.ok(new ApiResponse(true, "Already logged out"));
+            }
+        } catch (Exception e) {
+            log.error("Error during logout: {}", e.getMessage());
+            return ResponseEntity.ok(new ApiResponse(true, "Logged out"));
+        }
+    }
+
+    @GetMapping("/validate-token")
+    @Operation(summary = "Validate token", description = "Check if token is valid and not blacklisted")
+    public ResponseEntity<?> validateToken(@RequestParam String token) {
+        try {
+            if (tokenProvider.validateToken(token)) {
+                return ResponseEntity.ok(new ApiResponse(true, "Token is valid"));
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse(false, "Token is invalid or blacklisted"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Token validation failed"));
+        }
+    }
 
     @PostMapping("/oauth2/google")
     @Operation(summary = "Google OAuth2 login", description = "Processes Google OAuth2 token and returns JWT")
@@ -201,10 +308,18 @@ public class AuthController {
                                 ". Please use that method to login."));
             }
 
-            // Generate token
-            String token = tokenProvider.createToken(user);
+            // Generate tokens
+            Map<String, Object> tokens = tokenProvider.createTokens(user);
 
-            return ResponseEntity.ok(new AuthResponse(token, user.getId(), user.getEmail(), user.getName()));
+            return ResponseEntity.ok(new AuthResponse(
+                    (String) tokens.get("accessToken"),
+                    (String) tokens.get("refreshToken"),
+                    (Long) tokens.get("accessTokenExpiresIn"),
+                    (Long) tokens.get("refreshTokenExpiresIn"),
+                    user.getId(),
+                    user.getEmail(),
+                    user.getName()
+            ));
         } catch (Exception e) {
             log.error("Google authentication error", e);
             return ResponseEntity

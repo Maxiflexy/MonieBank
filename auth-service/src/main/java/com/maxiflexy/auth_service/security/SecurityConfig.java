@@ -46,7 +46,8 @@ public class SecurityConfig {
                 // Configure authorization rules
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/verify-email",
-                                "/api/auth/resend-verification", "/api/auth/user/{userId}", "/api/auth/oauth2/**", "/api-docs/**",
+                                "/api/auth/resend-verification", "/api/auth/user/{userId}", "/api/auth/oauth2/**",
+                                "/api/auth/refresh", "/api/auth/validate-token", "/api-docs/**",
                                 "/swagger-ui/**", "/swagger-ui.html")
                         .permitAll()
                         .anyRequest()
