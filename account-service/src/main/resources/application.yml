@@ -9,12 +9,12 @@ spring:
 
   datasource:
     #url: jdbc:postgresql://localhost:5433/account_service
-    #url: jdbc:postgresql://localhost:5433/moniebank
-    url: jdbc:postgresql://34.38.26.110:5432/moniebank
-    #username: postgres
-    username: moniebank-db
-    #password: password
-    password: password1234#
+    url: jdbc:postgresql://localhost:5433/moniebank
+    #url: jdbc:postgresql://34.38.26.110:5432/moniebank
+    username: postgres
+    #username: moniebank-db
+    password: password
+    #password: password1234#
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10

@@ -9,7 +9,8 @@ spring:
 
   # MailDev Configuration (replacing Gmail)
   mail:
-    host: 16.171.9.59
+    host: maildev
+    #host: 16.171.9.59
     port: 1025
     # No username/password needed for MailDev
     properties:
@@ -21,7 +22,8 @@ spring:
 
   # Kafka Configuration
   kafka:
-    bootstrap-servers: 16.171.9.59:9092
+    bootstrap-servers: kafka:9092
+    #bootstrap-servers: 16.171.9.59:9092
     consumer:
       group-id: notification-service
       auto-offset-reset: earliest

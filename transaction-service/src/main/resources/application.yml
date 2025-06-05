@@ -10,12 +10,12 @@ spring:
   # Database configuration
   datasource:
     #url: jdbc:postgresql://localhost:5433/account_service
-    #url: jdbc:postgresql://localhost:5433/moniebank
-    url: jdbc:postgresql://34.38.26.110:5432/moniebank
-    #username: postgres
-    username: moniebank-db
-    #password: password
-    password: password1234#
+    url: jdbc:postgresql://moniebank:5433/moniebank
+    #url: jdbc:postgresql://34.38.26.110:5432/moniebank
+    username: postgres
+    #username: moniebank-db
+    password: password
+    #password: password1234#
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -27,8 +27,8 @@ spring:
 
   # Kafka configuration
   kafka:
-    #bootstrap-servers: localhost:9092
-    bootstrap-servers: 13.61.173.52:9092
+    bootstrap-servers: kafka:9092
+    #bootstrap-servers: 13.61.173.52:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
