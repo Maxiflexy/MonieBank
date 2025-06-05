@@ -1,21 +1,16 @@
+# auth-service/src/main/resources/application.yml
 server:
   port: 8081
 
 spring:
   application:
     name: auth-service
-#  config:
-#    import: optional:configserver:http://localhost:8888
 
   # This is for direct configuration, but we'll use config server in production
   datasource:
-    #url: jdbc:postgresql://moniebank:5434/auth_service
     url: jdbc:postgresql://moniebank:5432/moniebank
-    #url: jdbc:postgresql://34.38.26.110:5432/moniebank
     username: postgres
-    #username: moniebank-db
     password: password
-    #password: password1234#
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -27,27 +22,12 @@ spring:
 
   kafka:
     bootstrap-servers: kafka:9092
-    #bootstrap-servers: 13.61.173.52:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.type.mapping: emailnotification:com.maxiflexy.auth_service.dto.EmailNotificationDto
 
-  # Email Configuration (Gmail)
-#  mail:
-#    host: smtp.gmail.com
-#    port: 587
-#    username: ${GMAIL_USERNAME:your-email@gmail.com}
-#    password: ${GMAIL_APP_PASSWORD:your-app-password}
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls:
-#            enable: true
-
-  # Google OAuth2 Configuration
   security:
     oauth2:
       client:
@@ -65,11 +45,16 @@ app:
     tokenSecret: my_very_confidential_sectet_for_auth_application_with_sufficient_length_for_security
     accessTokenExpirationMsec: 300000 # 5 minutes (5 * 60 * 1000)
     refreshTokenExpirationMsec: 1200000 # 20 minutes (20 * 60 * 1000)
-    tokenExpirationMsec: 864000000 # 10 days
     verification:
       token-expiry-minutes: 60 # 1 hour
   frontend:
-    base-url: http://localhost:5173/
+    base-url: http://localhost:80/
+  # Cookie security settings
+  cookie:
+    secure: false # Set to true in production with HTTPS
+  # CORS settings for cookie support
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:80,http://localhost:8080
 
 # Swagger/OpenAPI configuration
 springdoc:
@@ -78,15 +63,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
-
-
-# Eureka configuration
-#eureka:
-#  instance:
-#    hostname: localhost
-#    preferIpAddress: false
-#    instanceId: localhost:${spring.application.name}:${server.port}
-#    appname: ${spring.application.name}
 
 eureka:
   instance:

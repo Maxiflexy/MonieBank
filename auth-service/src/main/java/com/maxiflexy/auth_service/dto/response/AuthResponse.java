@@ -8,19 +8,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthResponse {
-    private String accessToken;
-    private String refreshToken;
+    // NO TOKENS - They are in HTTP-only cookies only
     private String tokenType = "Bearer";
     private Long accessTokenExpiresIn;
     private Long refreshTokenExpiresIn;
     private Long userId;
     private String email;
     private String name;
+    private String imageUrl;
 
-    public AuthResponse(String accessToken, String refreshToken, Long accessTokenExpiresIn,
-                        Long refreshTokenExpiresIn, Long userId, String email, String name) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+    public AuthResponse(Long accessTokenExpiresIn, Long refreshTokenExpiresIn,
+                        Long userId, String email, String name) {
         this.accessTokenExpiresIn = accessTokenExpiresIn;
         this.refreshTokenExpiresIn = refreshTokenExpiresIn;
         this.userId = userId;
