@@ -201,4 +201,10 @@ public class TokenProvider {
     public void cleanupExpiredTokens() {
         tokenRepository.deleteExpiredTokens(LocalDateTime.now());
     }
+
+    @Deprecated
+    public String createToken(User user) {
+        // This method creates an access token for backward compatibility
+        return createAccessToken(user);
+    }
 }

@@ -12,16 +12,22 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const loadUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const userData = await authApi.getCurrentUser();
-          setCurrentUser(userData);
-        } catch (error) {
-          console.error('Failed to load user:', error);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-        }
+      try {
+        // Try to get current user using HTTP-only cookies
+        const userData = await authApi.getCurrentUser();
+        setCurrentUser(userData);
+
+        // Store user data (but not tokens) in localStorage for UI purposes
+        localStorage.setItem('user', JSON.stringify({
+          id: userData.id,
+          email: userData.email,
+          name: userData.name
+        }));
+      } catch (error) {
+        console.error('Failed to load user:', error);
+        // Clear any existing user data
+        localStorage.removeItem('user');
+        setCurrentUser(null);
       }
       setLoading(false);
     };
@@ -32,19 +38,17 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await authApi.login(credentials);
-      localStorage.setItem('token', response.accessToken);
-      localStorage.setItem('user', JSON.stringify({
+
+      // Store only user data, cookies are handled automatically
+      const userData = {
         id: response.userId,
         email: response.email,
         name: response.name
-      }));
-      
-      setCurrentUser({
-        id: response.userId,
-        email: response.email,
-        name: response.name
-      });
-      
+      };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+      setCurrentUser(userData);
+
       toast.success('Login successful!');
       navigate('/dashboard');
       return response;
@@ -77,19 +81,17 @@ export const AuthProvider = ({ children }) => {
   const googleLogin = async (tokenId) => {
     try {
       const response = await authApi.googleLogin(tokenId);
-      localStorage.setItem('token', response.accessToken);
-      localStorage.setItem('user', JSON.stringify({
+
+      // Store only user data, cookies are handled automatically
+      const userData = {
         id: response.userId,
         email: response.email,
         name: response.name
-      }));
-      
-      setCurrentUser({
-        id: response.userId,
-        email: response.email,
-        name: response.name
-      });
-      
+      };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+      setCurrentUser(userData);
+
       toast.success('Login with Google successful!');
       navigate('/dashboard');
       return response;
@@ -99,31 +101,58 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setCurrentUser(null);
-    navigate('/login');
-    toast.info('Logged out successfully');
+  const logout = async () => {
+    try {
+      // Call logout endpoint to clear HTTP-only cookies
+      await authApi.logout();
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+      // Continue with logout even if API call fails
+    } finally {
+      // Clear local storage and state
+      localStorage.removeItem('user');
+      setCurrentUser(null);
+      navigate('/login');
+      toast.info('Logged out successfully');
+    }
   };
 
   const updateProfile = async (profileData) => {
     try {
       const response = await authApi.updateProfile(profileData);
-      
+
       // Update local storage and current user state
       const updatedUser = {
         ...currentUser,
         name: profileData.name,
       };
-      
+
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setCurrentUser(updatedUser);
-      
+
       toast.success('Profile updated successfully!');
       return response;
     } catch (error) {
       toast.error('Failed to update profile');
+      throw error;
+    }
+  };
+
+  // Function to refresh user data (useful after token refresh)
+  const refreshUser = async () => {
+    try {
+      const userData = await authApi.getCurrentUser();
+      setCurrentUser(userData);
+      localStorage.setItem('user', JSON.stringify({
+        id: userData.id,
+        email: userData.email,
+        name: userData.name
+      }));
+      return userData;
+    } catch (error) {
+      // If refresh fails, user is likely logged out
+      setCurrentUser(null);
+      localStorage.removeItem('user');
       throw error;
     }
   };
@@ -135,7 +164,8 @@ export const AuthProvider = ({ children }) => {
     register,
     googleLogin,
     logout,
-    updateProfile
+    updateProfile,
+    refreshUser
   };
 
   return (

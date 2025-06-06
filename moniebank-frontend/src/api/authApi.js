@@ -11,6 +11,16 @@ const authApi = {
     return response.data;
   },
 
+  logout: async () => {
+    const response = await axiosInstance.post("/auth/logout");
+    return response.data;
+  },
+
+  refreshToken: async () => {
+    const response = await axiosInstance.post("/auth/refresh");
+    return response.data;
+  },
+
   verifyEmail: async (token) => {
     try {
       // Simplified approach - just send the token as a query parameter
@@ -46,6 +56,16 @@ const authApi = {
   updateProfile: async (profileData) => {
     const response = await axiosInstance.put("/auth/user/update", profileData);
     return response.data;
+  },
+
+  // Method to check if user is authenticated (useful for route guards)
+  checkAuth: async () => {
+    try {
+      const response = await axiosInstance.get("/auth/user/me");
+      return { isAuthenticated: true, user: response.data };
+    } catch (error) {
+      return { isAuthenticated: false, user: null };
+    }
   },
 };
 
