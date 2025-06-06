@@ -17,9 +17,9 @@ spring:
           starttls:
             enable: false
 
-  # Kafka Configuration
+  # Kafka Configuration - FIXED: Use port 29092 for internal Docker communication
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: kafka:29092
     consumer:
       group-id: notification-service
       auto-offset-reset: earliest

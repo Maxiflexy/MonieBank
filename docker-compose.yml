@@ -125,7 +125,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
       # FIXED: Use underscores instead of hyphens
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=auth-service
@@ -176,7 +176,7 @@ services:
       - SPRING_MAIL_HOST=maildev
       - SPRING_MAIL_PORT=1025
       # FIXED: Use underscores instead of hyphens
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_KAFKA_CONSUMER_GROUP_ID=notification-service
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
@@ -203,7 +203,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
       # FIXED: Use underscores instead of hyphens
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=transaction-service
