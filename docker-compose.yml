@@ -14,35 +14,6 @@ services:
     networks:
       - banking-network
 
-#  # PostgreSQL databases for each service
-#  account-db:
-#    image: postgres:17-alpine
-#    container_name: account-db
-#    environment:
-#      POSTGRES_DB: account_service
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: password
-#    ports:
-#      - "5433:5432"
-#    volumes:
-#      - account-data:/var/lib/postgresql/data
-#    networks:
-#      - banking-network
-#
-#  auth-db:
-#    image: postgres:17-alpine
-#    container_name: auth-db
-#    environment:
-#      POSTGRES_DB: auth_service
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: password
-#    ports:
-#      - "5434:5432"
-#    volumes:
-#      - auth-data:/var/lib/postgresql/data
-#    networks:
-#      - banking-network
-
   # PgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -55,8 +26,6 @@ services:
     networks:
       - banking-network
     depends_on:
-      #- account-db
-      #- auth-db
       - moniebank
 
   # Kafka and Zookeeper for messaging
@@ -87,6 +56,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - banking-network
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:29092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # MailDev for email testing
   maildev:
@@ -97,14 +71,6 @@ services:
       - "1025:1025"  # SMTP port
     networks:
       - banking-network
-
-#networks:
-#  banking-network:
-#    driver: bridge
-#
-#volumes:
-#  account-data:
-#  auth-data:
 
   # Discovery Service
   eureka-service:
@@ -155,23 +121,22 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=auth-service
       - SERVER_PORT=8081
-      #- SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
       - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/moniebank
-      #- SPRING_DATASOURCE_USERNAME=moniebank-db
       - SPRING_DATASOURCE_USERNAME=postgres
-      #- SPRING_DATASOURCE_PASSWORD=password1234#
       - SPRING_DATASOURCE_PASSWORD=password
-      #- SPRING_KAFKA_BOOTSTRAP-SERVERS=16.171.9.59:9092
-      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:9092
+      # FIXED: Use underscores instead of hyphens
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=auth-service
-      - APP_FRONTEND_BASE-URL=http://${HOST_ADDRESS:-localhost}:80/
+      - APP_FRONTEND_BASE_URL=http://${HOST_ADDRESS:-localhost}:80/
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
-      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT-URI=http://${HOST_ADDRESS:-localhost}:80/api/auth/oauth2/callback/{registrationId}
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI=http://${HOST_ADDRESS:-localhost}:80/api/auth/oauth2/callback/{registrationId}
     depends_on:
       eureka-service:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - banking-network
@@ -186,11 +151,8 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=account-service
       - SERVER_PORT=8082
-      #- SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
       - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/moniebank
-      #- SPRING_DATASOURCE_USERNAME=moniebank-db
       - SPRING_DATASOURCE_USERNAME=postgres
-      #- SPRING_DATASOURCE_PASSWORD=password1234#
       - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
@@ -211,20 +173,22 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=notification-service
       - SERVER_PORT=8083
-      #- SPRING_MAIL_HOST=16.171.9.59
       - SPRING_MAIL_HOST=maildev
       - SPRING_MAIL_PORT=1025
-      #- SPRING_KAFKA_BOOTSTRAP-SERVERS=16.171.9.59:9092
-      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:9092
+      # FIXED: Use underscores instead of hyphens
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_KAFKA_CONSUMER_GROUP_ID=notification-service
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=notification-service
     depends_on:
       eureka-service:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     networks:
       - banking-network
-#
+
   # Transaction Service
   transaction-service:
     build:
@@ -235,18 +199,18 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=transaction-service
       - SERVER_PORT=8084
-      #- SPRING_DATASOURCE_URL=jdbc:postgresql://34.38.26.110:5432/moniebank
       - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/moniebank
-      #- SPRING_DATASOURCE_USERNAME=moniebank-db
       - SPRING_DATASOURCE_USERNAME=postgres
-      #- SPRING_DATASOURCE_PASSWORD=password1234#
       - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:9092
+      # FIXED: Use underscores instead of hyphens
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=transaction-service
     depends_on:
       eureka-service:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - banking-network
@@ -265,11 +229,6 @@ services:
       - api-gateway
     networks:
       - banking-network
-
-#networks:
-#  banking-network:
-#    driver: bridge
-
 
 networks:
   banking-network:

@@ -13,11 +13,10 @@ spring:
         corsConfigurations:
           '[/**]':
             allowedOrigins:
-              - "http://localhost:5173"
-              - "http://localhost:3000"
-              - "http://localhost:8080"
-              - "http://localhost"
-              - "http://localhost:80"
+              - "http://localhost"      # Browser normalizes :80 to this
+              - "http://localhost:80"   # Explicit port 80
+              - "http://127.0.0.1"      # Alternative localhost
+              - "http://127.0.0.1:80"   # Alternative with port
             allowedMethods:
               - GET
               - POST
@@ -25,6 +24,7 @@ spring:
               - DELETE
               - OPTIONS
               - PATCH
+              - HEAD
             allowedHeaders:
               - "*"
             # CRITICAL: Must be true for cookies to work
@@ -33,6 +33,9 @@ spring:
             # Expose auth error headers to frontend
             exposedHeaders:
               - "X-Auth-Error"
+              - "Set-Cookie"
+              - "Access-Control-Allow-Origin"
+              - "Access-Control-Allow-Credentials"
 
 management:
   endpoints:

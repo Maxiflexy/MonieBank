@@ -4,13 +4,10 @@ server:
 spring:
   application:
     name: notification-service
-#  config:
-#    import: optional:configserver:http://localhost:8888
 
   # MailDev Configuration (replacing Gmail)
   mail:
     host: maildev
-    #host: 16.171.9.59
     port: 1025
     # No username/password needed for MailDev
     properties:
@@ -23,28 +20,34 @@ spring:
   # Kafka Configuration
   kafka:
     bootstrap-servers: kafka:9092
-    #bootstrap-servers: 16.171.9.59:9092
     consumer:
       group-id: notification-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # Additional consumer properties for better reliability
+      enable-auto-commit: true
+      auto-commit-interval: 1000
+      session-timeout: 30000
+      heartbeat-interval: 3000
+      # Retry configuration
+      max-poll-records: 10
+      max-poll-interval: 300000
+    # Add producer configuration if needed
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 # Eureka configuration
-#eureka:
-#  instance:
-#    hostname: localhost
-#    preferIpAddress: false
-#    instanceId: localhost:${spring.application.name}:${server.port}
-#    appname: ${spring.application.name}
-
 eureka:
   instance:
     preferIpAddress: true
+    instance-id: ${spring.application.name}:${server.port}
   client:
     serviceUrl:
       defaultZone: http://eureka-service:8761/eureka/
-
+    register-with-eureka: true
+    fetch-registry: true
 
 # Actuator endpoints
 management:
@@ -52,3 +55,15 @@ management:
     web:
       exposure:
         include: '*'
+  endpoint:
+    health:
+      show-details: always
+
+# Logging configuration for debugging
+logging:
+  level:
+    org.apache.kafka: INFO
+    org.springframework.kafka: INFO
+    com.maxiflexy.notification_service: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
