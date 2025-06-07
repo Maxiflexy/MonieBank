@@ -1,12 +1,13 @@
 package com.maxiflexy.auth_service.controller;
 
-import com.maxiflexy.auth_service.dto.response.ApiResponse;
+//import com.maxiflexy.auth_service.dto.response.ApiResponse;
 import com.maxiflexy.auth_service.dto.request.ProfileUpdateRequest;
 import com.maxiflexy.auth_service.dto.response.EncryptedMinimalUserResponse;
 import com.maxiflexy.auth_service.dto.response.EncryptedUserResponse;
 import com.maxiflexy.auth_service.model.User;
 import com.maxiflexy.auth_service.repository.UserRepository;
 import com.maxiflexy.auth_service.service.TokenProvider;
+import com.maxiflexy.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;

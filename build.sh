@@ -73,11 +73,11 @@ build_frontend() {
 # List of all services
 SERVICES=(
     "auth-service:./auth-service"
-    "account-service:./account-service"
-    "api-gateway:./api-gateway"
-    "eureka-server:./eureka-server"
-    "notification-service:./notification-service"
-    "transaction-service:./transaction-service"
+#    "account-service:./account-service"
+#    "api-gateway:./api-gateway"
+#    "eureka-server:./eureka-server"
+#    "notification-service:./notification-service"
+#    "transaction-service:./transaction-service"
 )
 
 # Main build logic
