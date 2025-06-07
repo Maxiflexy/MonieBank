@@ -14,7 +14,6 @@ services:
     networks:
       - banking-network
 
-  # PgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
@@ -28,7 +27,6 @@ services:
     depends_on:
       - moniebank
 
-  # Kafka and Zookeeper for messaging
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
     container_name: zookeeper
@@ -62,7 +60,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # MailDev for email testing
   maildev:
     image: maildev/maildev
     container_name: maildev
@@ -72,11 +69,10 @@ services:
     networks:
       - banking-network
 
-  # Discovery Service
+  # Use pre-built images instead of building
   eureka-service:
-    build:
-      context: ./eureka-server
-      dockerfile: Dockerfile
+    image: moniebank/eureka-server:${IMAGE_VERSION:-latest}
+    container_name: eureka-service
     ports:
       - "8761:8761"
     environment:
@@ -92,11 +88,9 @@ services:
     networks:
       - banking-network
 
-  # API Gateway
   api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+    image: moniebank/api-gateway:${IMAGE_VERSION:-latest}
+    container_name: api-gateway
     ports:
       - "8080:8080"
     environment:
@@ -111,11 +105,9 @@ services:
     networks:
       - banking-network
 
-  # Auth Service
   auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+    image: moniebank/auth-service:${IMAGE_VERSION:-latest}
+    container_name: auth-service
     ports:
       - "8081:8081"
     environment:
@@ -145,11 +137,9 @@ services:
     networks:
       - banking-network
 
-  # Account Service
   account-service:
-    build:
-      context: ./account-service
-      dockerfile: Dockerfile
+    image: moniebank/account-service:${IMAGE_VERSION:-latest}
+    container_name: account-service
     ports:
       - "8082:8082"
     environment:
@@ -171,11 +161,9 @@ services:
     networks:
       - banking-network
 
-  # Notification Service
   notification-service:
-    build:
-      context: ./notification-service
-      dockerfile: Dockerfile
+    image: moniebank/notification-service:${IMAGE_VERSION:-latest}
+    container_name: notification-service
     ports:
       - "8083:8083"
     environment:
@@ -197,11 +185,9 @@ services:
     networks:
       - banking-network
 
-  # Transaction Service
   transaction-service:
-    build:
-      context: ./transaction-service
-      dockerfile: Dockerfile
+    image: moniebank/transaction-service:${IMAGE_VERSION:-latest}
+    container_name: transaction-service
     ports:
       - "8084:8084"
     environment:
@@ -227,14 +213,9 @@ services:
     networks:
       - banking-network
 
-  # Frontend Service
   frontend:
-    build:
-      context: ./moniebank-frontend
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=http://localhost:8080/api
-        - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+    image: moniebank/frontend:${IMAGE_VERSION:-latest}
+    container_name: frontend
     ports:
       - "80:80"
     depends_on:

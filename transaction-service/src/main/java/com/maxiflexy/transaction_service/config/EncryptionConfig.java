@@ -23,19 +23,19 @@ public class EncryptionConfig {
     @Autowired
     private IdEncryptionDeserializer idEncryptionDeserializer;
 
-    @Bean
-    @Primary
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        SimpleModule encryptionModule = new SimpleModule("EncryptionModule");
-        encryptionModule.addSerializer(String.class, encryptionSerializer);
-        encryptionModule.addDeserializer(String.class, encryptionDeserializer);
-        encryptionModule.addSerializer(Long.class, idEncryptionSerializer);
-        encryptionModule.addDeserializer(Long.class, idEncryptionDeserializer);
-
-        objectMapper.registerModule(encryptionModule);
-
-        return objectMapper;
-    }
+//    @Bean
+//    @Primary
+//    public ObjectMapper objectMapper() {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//
+//        SimpleModule encryptionModule = new SimpleModule("EncryptionModule");
+//        encryptionModule.addSerializer(String.class, encryptionSerializer);
+//        encryptionModule.addDeserializer(String.class, encryptionDeserializer);
+//        encryptionModule.addSerializer(Long.class, idEncryptionSerializer);
+//        encryptionModule.addDeserializer(Long.class, idEncryptionDeserializer);
+//
+//        objectMapper.registerModule(encryptionModule);
+//
+//        return objectMapper;
+//    }
 }
