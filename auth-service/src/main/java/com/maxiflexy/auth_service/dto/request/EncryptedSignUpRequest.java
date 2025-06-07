@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class SignUpRequest {
+public class EncryptedSignUpRequest {
 
     @NotBlank
     @Encrypted

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class ProfileUpdateRequest {
+public class EncryptedProfileUpdateRequest {
     @NotBlank
     @Encrypted
     private String name;

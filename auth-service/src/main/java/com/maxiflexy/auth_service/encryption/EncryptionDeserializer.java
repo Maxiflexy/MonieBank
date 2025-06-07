@@ -3,6 +3,7 @@ package com.maxiflexy.auth_service.encryption;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.maxiflexy.auth_service.config.EncryptionContext;
 import com.maxiflexy.auth_service.service.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,10 +22,21 @@ public class EncryptionDeserializer extends JsonDeserializer<String> {
 
     @Override
     public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        String encryptedValue = p.getValueAsString();
-        if (encryptedValue == null || encryptedValue.isEmpty()) {
-            return encryptedValue;
+        String value = p.getValueAsString();
+        if (value == null || value.isEmpty()) {
+            return value;
         }
-        return encryptionService.decrypt(encryptedValue);
+
+        // Only decrypt if decryption is enabled for this request
+        if (EncryptionContext.isDecryptionEnabled()) {
+            try {
+                return encryptionService.decrypt(value);
+            } catch (Exception e) {
+                // If decryption fails, return original value (might be unencrypted)
+                return value;
+            }
+        } else {
+            return value;
+        }
     }
 }
