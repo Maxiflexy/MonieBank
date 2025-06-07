@@ -40,23 +40,22 @@ export const AuthUtils = {
 
   // Handle authentication errors (e.g., token expired)
   handleAuthError: (error) => {
-    // Clear local data
-    AuthUtils.clearAuthData();
-
-    // Check if it's a 401 error
-    if (error.response && error.response.status === 401) {
-      // Don't redirect here, let the axios interceptor handle it
-      return;
-    }
-
-    // For other errors, you might want to handle differently
+    // Don't clear data immediately - let the interceptor handle refresh first
     console.error('Authentication error:', error);
+
+    // Only clear if it's definitely a permanent auth failure
+    if (error.response?.status === 403 ||
+        (error.response?.status === 401 && error.config?._retry)) {
+      AuthUtils.clearAuthData();
+    }
   },
 
-  // Refresh user session
+  // Enhanced refresh session with better error handling
   refreshSession: async () => {
     try {
+      console.log('AuthUtils: Refreshing session...');
       await authApi.refreshToken();
+
       const userData = await authApi.getCurrentUser();
 
       // Update localStorage with fresh user data
@@ -66,38 +65,53 @@ export const AuthUtils = {
         name: userData.name
       }));
 
+      console.log('AuthUtils: Session refresh successful');
       return userData;
     } catch (error) {
-      console.error('Session refresh failed:', error);
+      console.error('AuthUtils: Session refresh failed:', error);
       AuthUtils.clearAuthData();
       throw error;
     }
   },
 
-  // Setup axios interceptor for automatic token refresh
-  setupAxiosInterceptors: (axiosInstance, onAuthFailure) => {
-    axiosInstance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
+  // Check if we should attempt authentication (has local data)
+  shouldAttemptAuth: () => {
+    const localData = AuthUtils.getLocalUserData();
+    return localData !== null;
+  },
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
+  // Attempt silent authentication
+  attemptSilentAuth: async () => {
+    try {
+      // First try to get current user
+      const userData = await authApi.getCurrentUser();
 
-          try {
-            await AuthUtils.refreshSession();
-            return axiosInstance(originalRequest);
-          } catch (refreshError) {
-            if (onAuthFailure) {
-              onAuthFailure();
-            }
-            return Promise.reject(refreshError);
-          }
-        }
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify({
+        id: userData.id,
+        email: userData.email,
+        name: userData.name
+      }));
 
-        return Promise.reject(error);
+      return { success: true, user: userData };
+    } catch (error) {
+      // If getCurrentUser fails, try refresh
+      try {
+        await authApi.refreshToken();
+        const userData = await authApi.getCurrentUser();
+
+        localStorage.setItem('user', JSON.stringify({
+          id: userData.id,
+          email: userData.email,
+          name: userData.name
+        }));
+
+        return { success: true, user: userData };
+      } catch (refreshError) {
+        AuthUtils.clearAuthData();
+        return { success: false, error: refreshError };
       }
-    );
+    }
   }
 };
 

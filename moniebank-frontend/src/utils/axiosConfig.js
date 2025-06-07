@@ -15,7 +15,6 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     console.log('Making request to:', config.url);
-    console.log('Request config:', config);
     return config;
   },
   (error) => {
@@ -24,6 +23,22 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+// Track refresh attempts to prevent infinite loops
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
 // Add a response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -31,49 +46,58 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error) => {
-    console.error('Response error:', error);
-
-    // Log CORS-related errors for debugging
-    if (error.response?.status === 403 && error.message.includes('CORS')) {
-      console.error('CORS Error Details:', {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        headers: error.response.headers,
-        config: error.config
-      });
-    }
-
     const originalRequest = error.config;
 
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    // Handle 401 errors with token refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+
+      // If we're already refreshing, queue this request
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(() => {
+          return axiosInstance(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
         console.log('Attempting token refresh...');
+
         // Try to refresh the token
         await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
           withCredentials: true
         });
 
-        console.log('Token refresh successful, retrying original request');
+        console.log('Token refresh successful');
+        processQueue(null);
+
         // Retry the original request
         return axiosInstance(originalRequest);
+
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
-        // Refresh failed, redirect to login
+        processQueue(refreshError);
+
+        // Clear user data and redirect to login
         localStorage.removeItem('user');
-        window.location.href = '/login';
+
+        // Only redirect if we're not already on the login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
-    if (error.response && error.response.status === 401) {
-      console.log('Unauthorized, redirecting to login');
-      // Handle unauthorized errors (e.g., redirect to login)
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-
+    // For other types of errors, just pass them through
     return Promise.reject(error);
   }
 );

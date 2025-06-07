@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // Try to get current user using HTTP-only cookies
+        // First, try to get current user using existing cookies
         const userData = await authApi.getCurrentUser();
         setCurrentUser(userData);
 
@@ -24,10 +24,30 @@ export const AuthProvider = ({ children }) => {
           name: userData.name
         }));
       } catch (error) {
-        console.error('Failed to load user:', error);
-        // Clear any existing user data
-        localStorage.removeItem('user');
-        setCurrentUser(null);
+        console.error('Failed to load user, attempting refresh:', error);
+
+        // If getCurrentUser fails, try refreshing the token
+        try {
+          console.log('Attempting token refresh during initialization...');
+          await authApi.refreshToken();
+
+          // After successful refresh, try getting user data again
+          const userData = await authApi.getCurrentUser();
+          setCurrentUser(userData);
+
+          localStorage.setItem('user', JSON.stringify({
+            id: userData.id,
+            email: userData.email,
+            name: userData.name
+          }));
+
+          console.log('Token refresh and user load successful');
+        } catch (refreshError) {
+          console.error('Token refresh failed during initialization:', refreshError);
+          // Clear any existing user data
+          localStorage.removeItem('user');
+          setCurrentUser(null);
+        }
       }
       setLoading(false);
     };
@@ -150,10 +170,23 @@ export const AuthProvider = ({ children }) => {
       }));
       return userData;
     } catch (error) {
-      // If refresh fails, user is likely logged out
-      setCurrentUser(null);
-      localStorage.removeItem('user');
-      throw error;
+      // If refresh fails, try token refresh first
+      try {
+        await authApi.refreshToken();
+        const userData = await authApi.getCurrentUser();
+        setCurrentUser(userData);
+        localStorage.setItem('user', JSON.stringify({
+          id: userData.id,
+          email: userData.email,
+          name: userData.name
+        }));
+        return userData;
+      } catch (refreshError) {
+        // Both attempts failed, user is likely logged out
+        setCurrentUser(null);
+        localStorage.removeItem('user');
+        throw refreshError;
+      }
     }
   };
 
