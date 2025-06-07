@@ -4,17 +4,12 @@ server:
 spring:
   application:
     name: account-service
-#  config:
-#    import: optional:configserver:http://localhost:8888
 
+  # Database configuration using environment variables
   datasource:
-    #url: jdbc:postgresql://localhost:5433/account_service
-    url: jdbc:postgresql://localhost:5433/moniebank
-    #url: jdbc:postgresql://34.38.26.110:5432/moniebank
-    username: postgres
-    #username: moniebank-db
-    password: password
-    #password: password1234#
+    url: jdbc:postgresql://moniebank:5432/${POSTGRES_DB:moniebank}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -24,6 +19,10 @@ spring:
       ddl-auto: update
     show-sql: true
 
+# Encryption configuration
+app:
+  encryption:
+    secret-key: ${ENCRYPTION_SECRET_KEY}
 
 # Swagger/OpenAPI configuration
 springdoc:
@@ -32,15 +31,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
-
-
-# Eureka configuration
-#eureka:
-#  instance:
-#    hostname: localhost
-#    preferIpAddress: false
-#    instanceId: localhost:${spring.application.name}:${server.port}
-#    appname: ${spring.application.name}
 
 eureka:
   instance:

@@ -2,6 +2,8 @@ package com.maxiflexy.auth_service.controller;
 
 import com.maxiflexy.auth_service.dto.response.ApiResponse;
 import com.maxiflexy.auth_service.dto.request.ProfileUpdateRequest;
+import com.maxiflexy.auth_service.dto.response.EncryptedMinimalUserResponse;
+import com.maxiflexy.auth_service.dto.response.EncryptedUserResponse;
 import com.maxiflexy.auth_service.model.User;
 import com.maxiflexy.auth_service.repository.UserRepository;
 import com.maxiflexy.auth_service.service.TokenProvider;
@@ -30,6 +32,87 @@ public class UserController {
     // Cookie name (must match with AuthController)
     private static final String ACCESS_TOKEN_COOKIE = "accessToken";
 
+//    @GetMapping("/me")
+//    @Operation(summary = "Get current user", description = "Returns the current authenticated user from cookie")
+//    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+//        try {
+//            // Try to get token from Authorization header first (backward compatibility)
+//            String token = getTokenFromAuthHeader(request);
+//
+//            // If no Authorization header, try to get from cookies
+//            if (token == null) {
+//                token = getTokenFromCookie(request, ACCESS_TOKEN_COOKIE);
+//            }
+//
+//            if (token == null || !tokenProvider.validateToken(token)) {
+//                return ResponseEntity.badRequest().body(new ApiResponse(false, "No valid authentication found"));
+//            }
+//
+//            Long userId = tokenProvider.getUserIdFromToken(token);
+//            User user = userRepository.findById(userId)
+//                    .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//            return ResponseEntity.ok(user);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(new ApiResponse(false, "Invalid authentication"));
+//        }
+//    }
+//
+//    @GetMapping("/{userId}")
+//    @Operation(summary = "Get user by ID", description = "Returns a user by ID - for internal service validation")
+//    public ResponseEntity<?> getUserById(@PathVariable Long userId) {
+//        User user = userRepository.findById(userId)
+//                .orElse(null);
+//
+//        if (user == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//
+//        // Return a minimal user object with just the necessary fields
+//        User minimalUser = new User();
+//        minimalUser.setId(user.getId());
+//        minimalUser.setName(user.getName());
+//        minimalUser.setEmail(user.getEmail());
+//
+//        return ResponseEntity.ok(minimalUser);
+//    }
+//
+//    @PutMapping("/update")
+//    @Operation(summary = "Update user profile", description = "Updates the current user's profile")
+//    public ResponseEntity<?> updateProfile(
+//            HttpServletRequest request,
+//            @Valid @RequestBody ProfileUpdateRequest updateRequest) {
+//
+//        try {
+//            // Try to get token from Authorization header first (backward compatibility)
+//            String token = getTokenFromAuthHeader(request);
+//
+//            // If no Authorization header, try to get from cookies
+//            if (token == null) {
+//                token = getTokenFromCookie(request, ACCESS_TOKEN_COOKIE);
+//            }
+//
+//            if (token == null || !tokenProvider.validateToken(token)) {
+//                return ResponseEntity.badRequest().body(new ApiResponse(false, "No valid authentication found"));
+//            }
+//
+//            Long userId = tokenProvider.getUserIdFromToken(token);
+//            User user = userRepository.findById(userId)
+//                    .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//            user.setName(updateRequest.getName());
+//            if (updateRequest.getContactAddress() != null) {
+//                user.setContactAddress(updateRequest.getContactAddress());
+//            }
+//
+//            User updatedUser = userRepository.save(user);
+//            return ResponseEntity.ok(updatedUser);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(new ApiResponse(false, "Invalid authentication or update failed"));
+//        }
+//    }
+
+
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Returns the current authenticated user from cookie")
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
@@ -50,12 +133,15 @@ public class UserController {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            return ResponseEntity.ok(user);
+            // Return encrypted user response
+            EncryptedUserResponse encryptedResponse = EncryptedUserResponse.fromUser(user);
+            return ResponseEntity.ok(encryptedResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Invalid authentication"));
         }
     }
 
+    // Replace the getUserById method with this:
     @GetMapping("/{userId}")
     @Operation(summary = "Get user by ID", description = "Returns a user by ID - for internal service validation")
     public ResponseEntity<?> getUserById(@PathVariable Long userId) {
@@ -66,15 +152,12 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        // Return a minimal user object with just the necessary fields
-        User minimalUser = new User();
-        minimalUser.setId(user.getId());
-        minimalUser.setName(user.getName());
-        minimalUser.setEmail(user.getEmail());
-
-        return ResponseEntity.ok(minimalUser);
+        // Return encrypted minimal user object
+        EncryptedMinimalUserResponse encryptedResponse = EncryptedMinimalUserResponse.fromUser(user);
+        return ResponseEntity.ok(encryptedResponse);
     }
 
+    // Replace the updateProfile method with this:
     @PutMapping("/update")
     @Operation(summary = "Update user profile", description = "Updates the current user's profile")
     public ResponseEntity<?> updateProfile(
@@ -104,7 +187,10 @@ public class UserController {
             }
 
             User updatedUser = userRepository.save(user);
-            return ResponseEntity.ok(updatedUser);
+
+            // Return encrypted user response
+            EncryptedUserResponse encryptedResponse = EncryptedUserResponse.fromUser(updatedUser);
+            return ResponseEntity.ok(encryptedResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Invalid authentication or update failed"));
         }

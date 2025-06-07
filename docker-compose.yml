@@ -4,9 +4,9 @@ services:
     image: postgres:17-alpine
     container_name: moniebank
     environment:
-      POSTGRES_DB: moniebank
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
@@ -121,17 +121,21 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=auth-service
       - SERVER_PORT=8081
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/moniebank
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      # FIXED: Use underscores instead of hyphens
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=auth-service
       - APP_FRONTEND_BASE_URL=http://${HOST_ADDRESS:-localhost}:80/
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI=http://${HOST_ADDRESS:-localhost}:80/api/auth/oauth2/callback/{registrationId}
     depends_on:
       eureka-service:
@@ -151,12 +155,16 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=account-service
       - SERVER_PORT=8082
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/moniebank
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=account-service
+      - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -175,12 +183,12 @@ services:
       - SERVER_PORT=8083
       - SPRING_MAIL_HOST=maildev
       - SPRING_MAIL_PORT=1025
-      # FIXED: Use underscores instead of hyphens
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_KAFKA_CONSUMER_GROUP_ID=notification-service
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=notification-service
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -199,14 +207,18 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=transaction-service
       - SERVER_PORT=8084
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/moniebank
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      # FIXED: Use underscores instead of hyphens
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://moniebank:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-service:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - EUREKA_INSTANCE_HOSTNAME=transaction-service
+      - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -222,7 +234,7 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=http://localhost:8080/api
-        - VITE_GOOGLE_CLIENT_ID=916866870969-dslc13bd9itnhmjkl54usgskb1gsflvl.apps.googleusercontent.com
+        - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     ports:
       - "80:80"
     depends_on:

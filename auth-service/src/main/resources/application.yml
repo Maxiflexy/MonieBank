@@ -1,4 +1,3 @@
-# auth-service/src/main/resources/application.yml
 server:
   port: 8081
 
@@ -6,11 +5,11 @@ spring:
   application:
     name: auth-service
 
-  # This is for direct configuration, but we'll use config server in production
+  # Database configuration using environment variables
   datasource:
-    url: jdbc:postgresql://moniebank:5432/moniebank
-    username: postgres
-    password: password
+    url: jdbc:postgresql://moniebank:5432/${POSTGRES_DB:moniebank}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -21,7 +20,7 @@ spring:
     show-sql: true
 
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -43,16 +42,17 @@ spring:
 app:
   auth:
     tokenSecret: my_very_confidential_sectet_for_auth_application_with_sufficient_length_for_security
-    accessTokenExpirationMsec: 300000 # 5 minutes (5 * 60 * 1000)
-    refreshTokenExpirationMsec: 1200000 # 20 minutes (20 * 60 * 1000)
+    accessTokenExpirationMsec: 300000 # 5 minutes
+    refreshTokenExpirationMsec: 1200000 # 20 minutes
     verification:
       token-expiry-minutes: 60 # 1 hour
   frontend:
     base-url: http://localhost:80/
-  # Cookie security settings
   cookie:
     secure: false # Set to true in production with HTTPS
-  # REMOVE CORS settings - API Gateway handles CORS
+  # Use environment variable for encryption key
+  encryption:
+    secret-key: ${ENCRYPTION_SECRET_KEY}
 
 # Swagger/OpenAPI configuration
 springdoc:

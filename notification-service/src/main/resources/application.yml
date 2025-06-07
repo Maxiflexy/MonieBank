@@ -1,3 +1,4 @@
+# notification-service/src/main/resources/application.yml
 server:
   port: 8083
 
@@ -5,11 +6,10 @@ spring:
   application:
     name: notification-service
 
-  # MailDev Configuration (replacing Gmail)
+  # MailDev Configuration
   mail:
     host: maildev
     port: 1025
-    # No username/password needed for MailDev
     properties:
       mail:
         smtp:
@@ -17,23 +17,20 @@ spring:
           starttls:
             enable: false
 
-  # Kafka Configuration - FIXED: Use port 29092 for internal Docker communication
+  # Kafka Configuration using environment variables
   kafka:
-    bootstrap-servers: kafka:29092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
     consumer:
       group-id: notification-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      # Additional consumer properties for better reliability
       enable-auto-commit: true
       auto-commit-interval: 1000
       session-timeout: 30000
       heartbeat-interval: 3000
-      # Retry configuration
       max-poll-records: 10
       max-poll-interval: 300000
-    # Add producer configuration if needed
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -59,7 +56,7 @@ management:
     health:
       show-details: always
 
-# Logging configuration for debugging
+# Logging configuration
 logging:
   level:
     org.apache.kafka: INFO
