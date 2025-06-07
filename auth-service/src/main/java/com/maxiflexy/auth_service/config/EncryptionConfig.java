@@ -1,10 +1,14 @@
-// File: com/maxiflexy/auth_service/config/EncryptionConfig.java
 package com.maxiflexy.auth_service.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.maxiflexy.auth_service.encryption.*;
-import com.maxiflexy.auth_service.service.EncryptionService;
+//import com.maxiflexy.auth_service.service.EncryptionService;
+import com.maxiflexy.common.encryption.serializers.EncryptionDeserializer;
+import com.maxiflexy.common.encryption.serializers.EncryptionSerializer;
+import com.maxiflexy.common.encryption.serializers.IdEncryptionDeserializer;
+import com.maxiflexy.common.encryption.serializers.IdEncryptionSerializer;
+import com.maxiflexy.common.service.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

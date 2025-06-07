@@ -14,17 +14,17 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        ApiResponse response = new ApiResponse(false, ex.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(InsufficientFundsException.class)
-    public ResponseEntity<ApiResponse> handleInsufficientFundsException(InsufficientFundsException ex) {
-        ApiResponse response = new ApiResponse(false, ex.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(ResourceNotFoundException.class)
+//    public ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+//        ApiResponse response = new ApiResponse(false, ex.getMessage());
+//        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+//    }
+//
+//    @ExceptionHandler(InsufficientFundsException.class)
+//    public ResponseEntity<ApiResponse> handleInsufficientFundsException(InsufficientFundsException ex) {
+//        ApiResponse response = new ApiResponse(false, ex.getMessage());
+//        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    //}
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {

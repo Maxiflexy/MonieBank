@@ -2,10 +2,13 @@
 // File: account-service/src/main/java/com/maxiflexy/account_service/dto/EncryptedAccountDto.java
 package com.maxiflexy.account_service.dto;
 
-import com.maxiflexy.account_service.encryption.Encrypted;
-import com.maxiflexy.account_service.encryption.EncryptedAmount;
-import com.maxiflexy.account_service.encryption.EncryptedId;
+//import com.maxiflexy.account_service.encryption.Encrypted;
+//import com.maxiflexy.account_service.encryption.EncryptedAmount;
+//import com.maxiflexy.account_service.encryption.EncryptedId;
 import com.maxiflexy.account_service.enums.AccountType;
+import com.maxiflexy.common.encryption.annotations.Encrypted;
+import com.maxiflexy.common.encryption.annotations.EncryptedAmount;
+import com.maxiflexy.common.encryption.annotations.EncryptedId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

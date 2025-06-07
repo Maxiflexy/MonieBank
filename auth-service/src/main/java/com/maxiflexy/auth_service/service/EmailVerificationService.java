@@ -1,8 +1,9 @@
 package com.maxiflexy.auth_service.service;
 
-import com.maxiflexy.auth_service.dto.EmailNotificationDto;
 import com.maxiflexy.auth_service.model.User;
 import com.maxiflexy.auth_service.repository.UserRepository;
+import com.maxiflexy.common.dto.EmailNotificationDto;
+import com.maxiflexy.common.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,9 @@ public class EmailVerificationService {
     private UserRepository userRepository;
 
     @Autowired
-    private NotificationSender notificationSender;
+    //private NotificationSender notificationSender;
+    private NotificationService notificationSender;
+
 
     @Value("${app.auth.verification.token-expiry-minutes}")
     private long tokenExpiryMinutes;
