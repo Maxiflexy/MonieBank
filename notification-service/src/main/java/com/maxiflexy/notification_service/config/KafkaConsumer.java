@@ -2,8 +2,7 @@ package com.maxiflexy.notification_service.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.maxiflexy.notification_service.dto.NotificationDto;
-import com.maxiflexy.common.dto.NotificationDto;
+import com.maxiflexy.notification_service.dto.NotificationDto;
 import com.maxiflexy.notification_service.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

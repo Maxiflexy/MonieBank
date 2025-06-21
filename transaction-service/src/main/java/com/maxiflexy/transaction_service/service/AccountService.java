@@ -1,11 +1,9 @@
 package com.maxiflexy.transaction_service.service;
 
-import com.maxiflexy.common.exception.InsufficientFundsException;
-import com.maxiflexy.common.exception.ResourceNotFoundException;
 import com.maxiflexy.transaction_service.dto.AccountDto;
 import com.maxiflexy.transaction_service.dto.TransferBalanceDto;
-//import com.maxiflexy.transaction_service.exception.InsufficientFundsException;
-//import com.maxiflexy.transaction_service.exception.ResourceNotFoundException;
+import com.maxiflexy.transaction_service.exception.InsufficientFundsException;
+import com.maxiflexy.transaction_service.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

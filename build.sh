@@ -94,7 +94,7 @@ if [ -z "$SPECIFIC_SERVICE" ]; then
     done
 
     # Build frontend
-    build_frontend
+#    build_frontend
 
 else
     # Build specific service

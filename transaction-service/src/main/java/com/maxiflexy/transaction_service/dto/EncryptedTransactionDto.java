@@ -1,8 +1,7 @@
 package com.maxiflexy.transaction_service.dto;
 
-//import com.maxiflexy.transaction_service.encryption.EncryptedId;
+import com.maxiflexy.transaction_service.encryption.EncryptedId;
 import com.maxiflexy.transaction_service.enums.TransactionStatus;
-import com.maxiflexy.common.encryption.annotations.EncryptedId;
 import com.maxiflexy.transaction_service.enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;

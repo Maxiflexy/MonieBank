@@ -1,8 +1,7 @@
 package com.maxiflexy.auth_service.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.maxiflexy.auth_service.service.EncryptionService;
-import com.maxiflexy.common.service.EncryptionService;
+import com.maxiflexy.auth_service.service.EncryptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

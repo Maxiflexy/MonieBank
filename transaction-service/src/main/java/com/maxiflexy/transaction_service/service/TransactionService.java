@@ -1,15 +1,11 @@
 package com.maxiflexy.transaction_service.service;
 
 
-import com.maxiflexy.common.dto.NotificationDto;
-import com.maxiflexy.common.exception.ResourceNotFoundException;
-import com.maxiflexy.common.exception.InsufficientFundsException;
-import com.maxiflexy.common.service.NotificationService;
 import com.maxiflexy.transaction_service.dto.*;
 import com.maxiflexy.transaction_service.enums.TransactionStatus;
 import com.maxiflexy.transaction_service.enums.TransactionType;
-//import com.maxiflexy.transaction_service.exception.InsufficientFundsException;
-//import com.maxiflexy.transaction_service.exception.ResourceNotFoundException;
+import com.maxiflexy.transaction_service.exception.InsufficientFundsException;
+import com.maxiflexy.transaction_service.exception.ResourceNotFoundException;
 import com.maxiflexy.transaction_service.model.Transaction;
 import com.maxiflexy.transaction_service.repository.TransactionRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +29,8 @@ public class TransactionService {
     @Autowired
     private AccountService accountService;
 
-    @Autowired
-    private NotificationService notificationService;
+//    @Autowired
+//    private NotificationService notificationService;
 
     @Autowired
     private KafkaTemplate<String, NotificationDto> kafkaTemplate;
@@ -197,63 +193,6 @@ public class TransactionService {
         return transactions.map(this::convertToDto);
     }
 
-//    private void sendDepositNotification(AccountDto account, BigDecimal amount) {
-//        NotificationDto notification = new NotificationDto();
-//        notification.setRecipientEmail(account.getEmail());
-//        notification.setRecipientName(account.getFullName());
-//        notification.setSubject("Deposit Successful");
-//        notification.setMessage("Your account has been credited with " + amount);
-//        notification.setAccountNumber(account.getAccountNumber());
-//        notification.setAmount(amount);
-//        notification.setTransactionType("DEPOSIT");
-//        notification.setTimestamp(LocalDateTime.now());
-//
-//        kafkaTemplate.send("transaction-notifications", notification);
-//    }
-//
-//    private void sendWithdrawalNotification(AccountDto account, BigDecimal amount) {
-//        NotificationDto notification = new NotificationDto();
-//        notification.setRecipientEmail(account.getEmail());
-//        notification.setRecipientName(account.getFullName());
-//        notification.setSubject("Withdrawal Successful");
-//        notification.setMessage("Your account has been debited with " + amount);
-//        notification.setAccountNumber(account.getAccountNumber());
-//        notification.setAmount(amount);
-//        notification.setTransactionType("WITHDRAWAL");
-//        notification.setTimestamp(LocalDateTime.now());
-//
-//        kafkaTemplate.send("transaction-notifications", notification);
-//    }
-//
-//    private void sendTransferNotification(AccountDto fromAccount, AccountDto toAccount, BigDecimal amount) {
-//        // Sender notification
-//        NotificationDto senderNotification = new NotificationDto();
-//        senderNotification.setRecipientEmail(fromAccount.getEmail());
-//        senderNotification.setRecipientName(fromAccount.getFullName());
-//        senderNotification.setSubject("Transfer Successful");
-//        senderNotification.setMessage("You have transferred " + amount + " to account " + toAccount.getAccountNumber());
-//        senderNotification.setAccountNumber(fromAccount.getAccountNumber());
-//        senderNotification.setAmount(amount);
-//        senderNotification.setTransactionType("TRANSFER_OUT");
-//        senderNotification.setTimestamp(LocalDateTime.now());
-//
-//        // Recipient notification
-//        NotificationDto recipientNotification = new NotificationDto();
-//        recipientNotification.setRecipientEmail(toAccount.getEmail());
-//        recipientNotification.setRecipientName(toAccount.getFullName());
-//        recipientNotification.setSenderName(fromAccount.getFullName());
-//        recipientNotification.setSubject("Transfer Received");
-//        recipientNotification.setMessage("You have received " + amount + " from account " + fromAccount.getAccountNumber());
-//        recipientNotification.setAccountNumber(toAccount.getAccountNumber());
-//        recipientNotification.setAmount(amount);
-//        recipientNotification.setTransactionType("TRANSFER_IN");
-//        recipientNotification.setTimestamp(LocalDateTime.now());
-//
-//        kafkaTemplate.send("transaction-notifications", senderNotification);
-//        kafkaTemplate.send("transaction-notifications", recipientNotification);
-//    }
-
-
     private void sendDepositNotification(AccountDto account, BigDecimal amount) {
         NotificationDto notification = new NotificationDto();
         notification.setRecipientEmail(account.getEmail());
@@ -265,7 +204,7 @@ public class TransactionService {
         notification.setTransactionType("DEPOSIT");
         notification.setTimestamp(LocalDateTime.now());
 
-        notificationService.sendTransactionNotification(notification);
+        kafkaTemplate.send("transaction-notifications", notification);
     }
 
     private void sendWithdrawalNotification(AccountDto account, BigDecimal amount) {
@@ -279,7 +218,7 @@ public class TransactionService {
         notification.setTransactionType("WITHDRAWAL");
         notification.setTimestamp(LocalDateTime.now());
 
-        notificationService.sendTransactionNotification(notification);
+        kafkaTemplate.send("transaction-notifications", notification);
     }
 
     private void sendTransferNotification(AccountDto fromAccount, AccountDto toAccount, BigDecimal amount) {
@@ -306,9 +245,67 @@ public class TransactionService {
         recipientNotification.setTransactionType("TRANSFER_IN");
         recipientNotification.setTimestamp(LocalDateTime.now());
 
-        notificationService.sendTransactionNotification(senderNotification);
-        notificationService.sendTransactionNotification(recipientNotification);
+        kafkaTemplate.send("transaction-notifications", senderNotification);
+        kafkaTemplate.send("transaction-notifications", recipientNotification);
     }
+
+
+//    private void sendDepositNotification(AccountDto account, BigDecimal amount) {
+//        NotificationDto notification = new NotificationDto();
+//        notification.setRecipientEmail(account.getEmail());
+//        notification.setRecipientName(account.getFullName());
+//        notification.setSubject("Deposit Successful");
+//        notification.setMessage("Your account has been credited with " + amount);
+//        notification.setAccountNumber(account.getAccountNumber());
+//        notification.setAmount(amount);
+//        notification.setTransactionType("DEPOSIT");
+//        notification.setTimestamp(LocalDateTime.now());
+//
+//        notificationService.sendTransactionNotification(notification);
+//    }
+//
+//    private void sendWithdrawalNotification(AccountDto account, BigDecimal amount) {
+//        NotificationDto notification = new NotificationDto();
+//        notification.setRecipientEmail(account.getEmail());
+//        notification.setRecipientName(account.getFullName());
+//        notification.setSubject("Withdrawal Successful");
+//        notification.setMessage("Your account has been debited with " + amount);
+//        notification.setAccountNumber(account.getAccountNumber());
+//        notification.setAmount(amount);
+//        notification.setTransactionType("WITHDRAWAL");
+//        notification.setTimestamp(LocalDateTime.now());
+//
+//        notificationService.sendTransactionNotification(notification);
+//    }
+//
+//    private void sendTransferNotification(AccountDto fromAccount, AccountDto toAccount, BigDecimal amount) {
+//        // Sender notification
+//        NotificationDto senderNotification = new NotificationDto();
+//        senderNotification.setRecipientEmail(fromAccount.getEmail());
+//        senderNotification.setRecipientName(fromAccount.getFullName());
+//        senderNotification.setSubject("Transfer Successful");
+//        senderNotification.setMessage("You have transferred " + amount + " to account " + toAccount.getAccountNumber());
+//        senderNotification.setAccountNumber(fromAccount.getAccountNumber());
+//        senderNotification.setAmount(amount);
+//        senderNotification.setTransactionType("TRANSFER_OUT");
+//        senderNotification.setTimestamp(LocalDateTime.now());
+//
+//        // Recipient notification
+//        NotificationDto recipientNotification = new NotificationDto();
+//        recipientNotification.setRecipientEmail(toAccount.getEmail());
+//        recipientNotification.setRecipientName(toAccount.getFullName());
+//        recipientNotification.setSenderName(fromAccount.getFullName());
+//        recipientNotification.setSubject("Transfer Received");
+//        recipientNotification.setMessage("You have received " + amount + " from account " + fromAccount.getAccountNumber());
+//        recipientNotification.setAccountNumber(toAccount.getAccountNumber());
+//        recipientNotification.setAmount(amount);
+//        recipientNotification.setTransactionType("TRANSFER_IN");
+//        recipientNotification.setTimestamp(LocalDateTime.now());
+//
+//        notificationService.sendTransactionNotification(senderNotification);
+//        notificationService.sendTransactionNotification(recipientNotification);
+//    }
+
 
     private TransactionDto convertToDto(Transaction transaction) {
         TransactionDto dto = new TransactionDto();

@@ -1,7 +1,6 @@
 package com.maxiflexy.notification_service.service;
 
-//import com.maxiflexy.notification_service.dto.NotificationDto;
-import com.maxiflexy.common.dto.NotificationDto;
+import com.maxiflexy.notification_service.dto.NotificationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

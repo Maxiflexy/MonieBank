@@ -1,9 +1,7 @@
 package com.maxiflexy.auth_service.dto.response;
 
-//import com.maxiflexy.auth_service.encryption.Encrypted;
-//import com.maxiflexy.auth_service.encryption.EncryptedId;
-import com.maxiflexy.common.encryption.annotations.Encrypted;
-import com.maxiflexy.common.encryption.annotations.EncryptedId;
+import com.maxiflexy.auth_service.encryption.Encrypted;
+import com.maxiflexy.auth_service.encryption.EncryptedId;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
